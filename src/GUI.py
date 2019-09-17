@@ -1,97 +1,79 @@
-from Tkinter import Tk, Label, Button
-import Tkinter as tk
-import os, sys, inspect
-# Leap Instantiation
+import time
 
+import matplotlib
+matplotlib.use('TkAgg')
+import numpy as np
+from matplotlib.backends._backend_tk import NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+import Tkinter as tk
+from Tkinter import *
+from tkMessageBox import *
+import os, sys, inspect
+if not os.path.exists('../data'):
+    os.makedirs('../data')
+import threading
+import ctypes
+# Leap Instantiation
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 arch_dir = '../lib/x64' if sys.maxsize > 2 ** 32 else '../lib/x86'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
-print src_dir
-print arch_dir
-
-import matplotlib
-matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.backends._backend_tk import NavigationToolbar2Tk
-from matplotlib.figure import Figure
-
-
-import time
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-import numpy as np
 import Leap
 
 
+class LeapRun(threading.Thread):
 
+    def __init__(self, account, password, suffix, times, ax1, ax2, canvas_draw, fig, log):
+        threading.Thread.__init__(self)
+        self.account = account
+        self.password = password
+        self.times = times
+        self.N = 2000
+        self.tip_co = np.zeros((self.N, 6), np.float32)
+        self.joint_series = np.zeros((self.N, 5, 5, 3), np.float32)
+        self.confs = np.zeros((self.N, 1), np.float32)
+        self.ax1 = ax1
+        self.ax2 = ax2
+        self.canvas = canvas_draw
+        self.fig = fig
+        self.log = log
+        self.suffix = suffix
+        self.threadSign = 1
 
-class MyFirstGUI:
-    def __init__(self, master):
-
-        self.master = master
-        master.title("A simple GUI")
-
-        master.geometry("800x600")
-
-        self.label = Label(master, text="This is our first GUI!")
-        self.label.pack()
-
-        self.greet_button = Button(master, text="Greet", command=self.run)
-        self.greet_button.pack()
-
-        self.close_button = Button(master, text="Close", command=master.quit)
-        self.close_button.pack()
-
-
-
-    def create_form(self, figure):
-        self.canvas = FigureCanvasTkAgg(figure, self.master)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-        toolbar = NavigationToolbar2Tk(self.canvas,
-                                       self.master)
-        toolbar.update()
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-
-
-
-
-    def plot(self, tip_co, joint_series, confs, N):
+    def plot(self):
         # plot trajectory of finger tip
-        fig = plt.figure()
-        ax1 = fig.add_subplot(2, 1, 1, projection='3d')
-
         # CAUTION: axis mapping: x -> y, y -> z, z -> x
-        ys1 = [pos[0] for pos in tip_co]
-        zs1 = [pos[1] for pos in tip_co]
-        xs1 = [pos[2] for pos in tip_co]
+        self.ax1.cla()
+        self.ax2.cla()
+        ys1 = [pos[0] for pos in self.tip_co]
+        zs1 = [pos[1] for pos in self.tip_co]
+        xs1 = [pos[2] for pos in self.tip_co]
 
-        ax1.scatter(xs1, ys1, zs1, s=0.2)
+        self.ax1.scatter(xs1, ys1, zs1, s=0.2)
 
-        ax1.set_xlim3d(-500, 500)
-        ax1.set_ylim3d(-500, 500)
-        ax1.set_zlim3d(0, 600)
+        self.ax1.set_xlim3d(-500, 500)
+        self.ax1.set_ylim3d(-500, 500)
+        self.ax1.set_zlim3d(0, 600)
 
-        ax1.set_xlabel('X')
-        ax1.set_ylabel('Y')
-        ax1.set_zlabel('Z')
+        self.ax1.set_xlabel('X')
+        self.ax1.set_ylabel('Y')
+        self.ax1.set_zlabel('Z')
 
         # plot hand geometry
 
-        joints = joint_series[0]
+        joints = self.joint_series[0]
 
-        for i in range(N):
+        for i in range(self.N):
 
-            if confs[i] > 0.5:
-                joints = joint_series[i]
+            if self.confs[i] > 0.5:
+                joints = self.joint_series[i]
                 break
-
         # print(joints)
-
         x2 = []
         y2 = []
         z2 = []
-
         for j in range(5):
             for k in range(5):
                 x2.append(joints[j][k][0])
@@ -107,26 +89,69 @@ class MyFirstGUI:
         ys2 = x2
         zs2 = y2
 
-        ax2 = fig.add_subplot(2, 1, 2, projection='3d')
-        ax2.plot(xs2, ys2, zs2)
+        self.ax2.plot(xs2, ys2, zs2)
 
-        ax2.set_xlim3d(-200, 200)
-        ax2.set_ylim3d(-200, 200)
-        ax2.set_zlim3d(0, 600)
+        self.ax2.set_xlim3d(-200, 200)
+        self.ax2.set_ylim3d(-200, 200)
+        self.ax2.set_zlim3d(0, 600)
 
-        ax2.set_xlabel('X')
-        ax2.set_ylabel('Y')
-        ax2.set_zlabel('Z')
+        self.ax2.set_xlabel('X')
+        self.ax2.set_ylabel('Y')
+        self.ax2.set_zlabel('Z')
 
-        return fig
+        self.canvas.draw_idle()
+        # self.writingTimes()
+
+    def get_id(self):
+        # returns id of the respective thread
+        if hasattr(self, '_thread_id'):
+            return self._thread_id
+        for id, thread in threading._active.items():
+            if thread is self:
+                return id
+
+    def raise_exception(self):
+        thread_id = self.get_id()
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id,
+                                                         ctypes.py_object(SystemExit))
+        if res > 1:
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
+            print('Exception raise failure')
+
+    def realTimePlot(self):
+        while (1):
+            t = threading.Thread(target=self.plot)
+            t.setDaemon(True)
+            t.start()
+            t.join()
+            time.sleep(0.8)
+
+            if self.threadSign == 0:
+                break
+        if t.isAlive():
+            print self.log.insert('1.0', "Error, thread is not killed, please check\n")
+        else:
+            print self.log.insert('1.0', "Plot is completed, threads has been killed\n")
 
     def run(self):
-        N = 2000
+        print self.account
+        print self.password
+        print self.times
+        print self.suffix
+
+        t2 = threading.Thread(target=self.realTimePlot)
+        t2.setDaemon(True)
+        t2.start()
+
+        # N = 2000
         # if len(sys.argv) < 2:
         #     print("Missing dumping file name!!!")
         #     exit(0)
-
-        fn = "yangkangou1.txt"
+        if (self.suffix == ""):
+            file_suffix = ""
+        else:
+            file_suffix = self.suffix + "_"
+        fn = self.account + "_" + self.password + "_" + file_suffix + str(self.times).zfill(2) + ".txt"
 
         finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
         bone_names = ['Metacarpal', 'Proximal', 'Intermediate', 'Distal']
@@ -152,16 +177,17 @@ class MyFirstGUI:
             frame.id - init_frame.id, (frame.timestamp - init_frame.timestamp) / 1000, len(frame.hands),
             len(frame.fingers), len(frame.tools), len(frame.gestures()))
         print(frame_str)
+        self.log.insert('1.0', frame_str + "\n")
 
         # sensor data
         # CAUTION: preallocate array space for speed
-        tss = np.zeros((N, 1), np.uint64)
-        tip_co = np.zeros((N, 6), np.float32)
-        hand_co = np.zeros((N, 9), np.float32)
-        joint_series = np.zeros((N, 5, 5, 3), np.float32)
-        bone_geo = np.zeros((N, 5, 4, 2), np.float32)
-        confs = np.zeros((N, 1), np.float32)
-        valids = np.zeros((N, 1), np.uint32)
+        tss = np.zeros((self.N, 1), np.uint64)
+        # tip_co = np.zeros((N, 6), np.float32)
+        hand_co = np.zeros((self.N, 9), np.float32)
+        # joint_series = np.zeros((N, 5, 5, 3), np.float32)
+        bone_geo = np.zeros((self.N, 5, 4, 2), np.float32)
+        # confs = np.zeros((N, 1), np.float32)
+        valids = np.zeros((self.N, 1), np.uint32)
 
         # sensor data statistics
         out_of_range = 0
@@ -187,16 +213,26 @@ class MyFirstGUI:
                 frame_id = frame.id
 
             i += 1
-            if i >= N:
-                l = N
+            if i >= self.N:
+                l = self.N
+                break
+            if self.threadSign == 0:
                 break
 
             frame_str = "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
                 frame.id - init_frame.id, (frame.timestamp - init_frame.timestamp) / 1000, len(frame.hands),
                 len(frame.fingers), len(frame.tools), len(frame.gestures()))
             print(frame_str)
-            print frame.timestamp
-            tss[i] = frame.timestamp
+            self.log.insert('1.0', frame_str + "\n")
+
+            # catch index out of range
+            try:
+                tss[i] = frame.timestamp
+            except IndexError:
+                self.log.insert('1.0',"ts array index out of range\n")
+                app.kill_all()
+
+
             valids[i] = 1
 
             # Get hands
@@ -208,7 +244,7 @@ class MyFirstGUI:
             hand = frame.hands[0]
 
             # Get estimation confidence
-            confs[i] = hand.confidence
+            self.confs[i] = hand.confidence
 
             # Get the hand's normal vector and direction
             normal = hand.palm_normal
@@ -232,7 +268,7 @@ class MyFirstGUI:
                        tip_end.x - tip_start.x, tip_end.y - tip_start.y, tip_end.z - tip_start.z)
 
             for j in range(6):
-                tip_co[i][j] = tip_pos[j]
+                self.tip_co[i][j] = tip_pos[j]
 
             # Get fingers
             for j in range(5):
@@ -247,14 +283,14 @@ class MyFirstGUI:
                 bone_start = bone.prev_joint.to_tuple()
 
                 for v in range(3):
-                    joint_series[i][j][0][v] = bone_start[v]
+                    self.joint_series[i][j][0][v] = bone_start[v]
 
                 for k in range(4):
                     bone = finger.bone(k)
                     bone_pos = bone.next_joint.to_tuple()
                     # print("\t\t\tBone: %s, start: %s, end: %s, direction: %s" % (bone_names[bone.type], bone.prev_joint, bone.next_joint, bone.direction))
                     for v in range(3):
-                        joint_series[i][j][k + 1][v] = bone_pos[v]
+                        self.joint_series[i][j][k + 1][v] = bone_pos[v]
                     bone_length = bone.length
                     bone_width = bone.width
                     bone_geo[i][j][k][0] = bone_length
@@ -266,9 +302,9 @@ class MyFirstGUI:
                 continue
             else:
 
-                tip_pos_last = tip_co[i - 1]
+                tip_pos_last = self.tip_co[i - 1]
                 diff = (tip_pos[0] - tip_pos_last[0]) ** 2 + (tip_pos[1] - tip_pos_last[1]) ** 2 + (
-                            tip_pos[2] - tip_pos_last[2]) ** 2
+                        tip_pos[2] - tip_pos_last[2]) ** 2
 
                 if diff < 20:
                     tcount += 1
@@ -280,15 +316,23 @@ class MyFirstGUI:
                 break
 
         # dump sensor data to file
-
+        print_range = "# of frames: %d, last ts: %d, out of range: %d\n" % (l, tss[l - 1], out_of_range)
+        self.log.insert('1.0', print_range)
+        self.log.tag_add('outofrange', '1.'+str(print_range.find("out")), '1.' + str(len(print_range)))
+        if out_of_range > 5:
+            self.log.tag_config('outofrange', foreground='red', underline=True)
+            pass
+        else:
+            self.log.tag_config('outofrange', foreground='blue', underline=True)
+            app.writingTimes()
         print("# of frames: %d, last ts: %d, out of range: %d" % (l, tss[l - 1], out_of_range))
 
-        fd = open(fn, 'w')
+        fd = open('../data/'+fn, 'w')
         for i in range(0, l):
 
-            tip = tuple(tip_co[i])
+            tip = tuple(self.tip_co[i])
             hand = tuple(hand_co[i])
-            confidence = confs[i]
+            confidence = self.confs[i]
             valid = valids[i]
             ts = tss[i]
 
@@ -305,7 +349,7 @@ class MyFirstGUI:
             for j in range(5):
 
                 for k in range(5):
-                    joint = tuple(joint_series[i][j][k])
+                    joint = tuple(self.joint_series[i][j][k])
 
                     joint_str = "%8.04f, %8.04f, %8.04f" % joint
                     finger_strs.append(joint_str)
@@ -340,19 +384,124 @@ class MyFirstGUI:
 
         fd.flush()
         fd.close()
-
-        self.figure = self.plot(tip_co, joint_series, confs, N)
-        self.create_form(self.figure)
-
-    def greet(self):
-        print("Greetings!")
+        self.threadSign = 0
+        self.log.insert('1.0', fn + " has been saved successfully\n")
+        # app.plot(self.tip_co, self.joint_series, self.confs, self.N)
 
 
+class Application(tk.Tk):
+    def __init__(self):
+        tk.Tk.__init__(self)
+        self.wm_title("Embed matplotlib in tkinter")
+        self.createWidgets()
 
-if __name__ == "__main__":
-    try:
-        root = Tk()
-        my_gui = MyFirstGUI(root)
-        root.mainloop()
-    except:
-        print("Error")
+    def createWidgets(self):
+        self.fig = plt.figure(figsize=(7,8))
+        self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
+        self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+        self.canvas._tkcanvas.grid(row=0, column=0)
+        self.ax1.mouse_init()
+        self.ax2.mouse_init()
+        toolbarFrame = tk.Frame(master=self)
+        toolbarFrame.grid(row=1, column=0, sticky="W")
+        toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
+        toolbar.update()
+        inputFrame = tk.Frame(master=self)
+        inputFrame.grid(row=0, column=1)
+
+        tk.Label(master=inputFrame, text="Please input your account:", font=("Helvetica", 12)).grid(row=0, column=0,
+                                                                                                    sticky="W", padx=5,
+                                                                                                    pady=5)
+        self.account = tk.Entry(master=inputFrame)
+        self.account.grid(row=0, column=1, sticky="WE", padx=5, pady=5, ipadx=10, columnspan=2)
+
+        tk.Label(master=inputFrame, text="Please input your writing word:", font=("Helvetica", 12)).grid(row=1,
+                                                                                                         column=0,
+                                                                                                         sticky="W",
+                                                                                                         padx=5,
+                                                                                                         pady=5)
+        self.password = tk.Entry(master=inputFrame)
+        self.password.grid(row=1, column=1, sticky="WE", padx=5, pady=5, ipadx=10, columnspan=2)
+
+        tk.Label(master=inputFrame, text="Please input suffix if needed:", font=("Helvetica", 12)).grid(row=2, column=0,
+                                                                                                        sticky="W",
+                                                                                                        padx=5,
+                                                                                                        pady=5)
+        self.suffix = tk.Entry(master=inputFrame)
+        self.suffix.grid(row=2, column=1, sticky="WE", padx=5, pady=5, ipadx=10, columnspan=2)
+
+        self.OPTIONS = ["1", "2", "3", "4", "5"]
+        self.initialTimes = 0
+        self.variable = StringVar(master=inputFrame)
+        self.variable.set(self.OPTIONS[self.initialTimes])
+        dropList = apply(OptionMenu, (inputFrame, self.variable) + tuple(self.OPTIONS))
+        tk.Label(master=inputFrame, text="Writing Times:", font=("Helvetica", 12)).grid(row=3, column=0, padx=5, pady=5,
+                                                                                        sticky="W")
+        dropList.grid(row=3, column=1, sticky="W")
+
+        tk.Button(master=inputFrame, text='Draw', font=("Helvetica", 12), command=self.thread).grid(row=4, column=0,
+                                                                                                    columnspan=1,
+                                                                                                    padx=5,
+                                                                                                    pady=5)
+
+        tk.Button(master=inputFrame, text='Kill All', font=("Helvetica", 12), command=self.kill_all).grid(row=4,
+                                                                                                          column=1,
+                                                                                                          columnspan=1,
+                                                                                                          padx=5,
+                                                                                                          pady=5)
+
+        # Vertical (y) Scroll Bar
+        scroll = Scrollbar(master=inputFrame, orient=VERTICAL)
+        scroll.grid(row=5, column=2, sticky="ENS")
+        self.log = tk.Text(master=inputFrame, height=21, width=80, yscrollcommand=scroll.set)
+        self.log.grid(row=5, column=0, padx=0, pady=5, sticky="WE", columnspan=2)
+        scroll.config(command=self.log.yview)
+
+    def kill_all(self):
+        self.t1.raise_exception()
+        self.t1.threadSign = 0
+        self.log.insert('1.0', "Threads has been Killed\n")
+
+    def isRunning(self):
+        try:
+            if self.t1.isAlive():
+                self.answer()
+                self.kill_all()
+                return TRUE
+            else:
+                return FALSE
+        except:
+            print "no thread"
+
+        return FALSE
+
+    def answer(self):
+        showerror("Error", "Error, Application is running")
+
+    def thread(self):
+        if not self.isRunning():
+            self.log.delete("1.0", END)
+            self.initialTimes = int(self.variable.get()) - 1
+            self.t1 = LeapRun(account=self.account.get(), password=self.password.get(), suffix=self.suffix.get(),
+                              times=self.variable.get(),
+                              ax1=self.ax1, ax2=self.ax2, canvas_draw=self.canvas, fig=self.fig, log=self.log)
+            self.t1.setDaemon(True)
+            self.t1.start()
+
+    def writingTimes(self):
+        self.initialTimes = self.initialTimes + 1
+        if (self.initialTimes == 5):
+            self.initialTimes = 0
+        self.variable.set(self.OPTIONS[self.initialTimes])
+
+
+def _quit():
+    print "application is closed"
+    app.quit()
+    app.destroy()
+
+if __name__ == '__main__':
+    app = Application()
+    app.protocol("WM_DELETE_WINDOW", _quit)
+    app.mainloop()
