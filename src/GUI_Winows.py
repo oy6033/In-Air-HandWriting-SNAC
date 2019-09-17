@@ -389,7 +389,7 @@ class LeapRun(threading.Thread):
 class Application(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
-        self.wm_title("Embed matplotlib in tkinter")
+        self.wm_title("In-Air Hand Writing")
         self.createWidgets()
 
     def createWidgets(self):
