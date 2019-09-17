@@ -1,11 +1,9 @@
 import time
-
 import matplotlib
 matplotlib.use('TkAgg')
 import numpy as np
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import Tkinter as tk
@@ -21,7 +19,6 @@ src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 arch_dir = '../lib/x64' if sys.maxsize > 2 ** 32 else '../lib/x86'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
-
 
 class LeapRun(threading.Thread):
 
