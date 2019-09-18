@@ -396,6 +396,7 @@ class LeapRun(threading.Thread):
 class Application(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
+        self.maxtimes = 5
         self.wm_title("In-Air Hand Writing")
         self.createWidgets()
 
@@ -420,29 +421,42 @@ class Application(tk.Tk):
         accountFrame = tk.Frame(master=inputFrame)
         tk.Label(master=accountFrame, text="Please input your account:", font=("Helvetica", 12),width=40).pack(fill=X, side=LEFT)
         self.account = tk.Entry(master=accountFrame,width=40)
+        self.account.bind('<Return>',self.push_enter)
         self.account.pack(fill=X, side = LEFT)
         accountFrame.pack(fill='both', expand=YES)
 
         writingFrame = tk.Frame(master=inputFrame)
         tk.Label(master=writingFrame, text="Please input your writing word:", font=("Helvetica", 12),width=40).pack(fill=X, side=LEFT)
         self.password = tk.Entry(master=writingFrame,width=40)
+        self.password.bind('<Return>',self.push_enter)
         self.password.pack(fill=X, side =LEFT)
         writingFrame.pack(fill='both', expand=YES)
 
         suffixFrame = tk.Frame(master=inputFrame)
         tk.Label(master=suffixFrame, text="Please input suffix if needed:", font=("Helvetica", 12),width=40).pack(fill=X, side=LEFT)
         self.suffix = tk.Entry(master=suffixFrame, width=40)
+        self.suffix.bind('<Return>',self.push_enter)
         self.suffix.pack(fill=X, side =LEFT)
         suffixFrame.pack(fill='both', expand=YES)
 
         dropListFrame = tk.Frame(master=inputFrame)
-        self.OPTIONS = ["1", "2", "3", "4", "5"]
+        self.OPTIONS = ["1", "2", "3", "4", "5", "6","7","8","9","10"]
         self.initialTimes = 0
         self.variable = StringVar(master=dropListFrame)
         self.variable.set(self.OPTIONS[self.initialTimes])
         tk.Label(master=dropListFrame, text="Writing Times:", font=("Helvetica", 12), width=40).pack(fill=X, side=LEFT)
         dropList = apply(OptionMenu, (dropListFrame, self.variable) + tuple(self.OPTIONS))
         dropList.pack(fill=X, side=LEFT)
+        MODES = [
+            ("5 times", 5),
+            ("10 times", 10),
+        ]
+        self.v = IntVar()
+        self.v.set(5)
+        for text, mode in MODES:
+            b = Radiobutton(dropListFrame, text=text,
+                            variable=self.v, value=mode, command=self.updateOption)
+            b.pack(fill=X, side=LEFT,expand=YES)
         dropListFrame.pack(fill='both', expand=YES)
 
         buttonFrame = tk.Frame(master=inputFrame)
@@ -460,6 +474,13 @@ class Application(tk.Tk):
         scroll.config(command=self.log.yview)
         scrollFrame.pack(fill='both', expand=YES)
 
+    def push_enter(self, event):
+        self.thread()
+
+    def updateOption(self):
+        self.maxtimes = self.v.get()
+        self.log.insert('1.0', "Max times has been changed to "+str(self.v.get()) + "\n")
+
     def kill_all(self):
         self.t1.raise_exception()
         self.t1.threadSign = 0
@@ -475,7 +496,6 @@ class Application(tk.Tk):
                 return FALSE
         except:
             print "no thread"
-
         return FALSE
 
     def answer(self):
@@ -493,7 +513,7 @@ class Application(tk.Tk):
 
     def writingTimes(self):
         self.initialTimes = self.initialTimes + 1
-        if (self.initialTimes == 5):
+        if (self.initialTimes == self.maxtimes):
             self.initialTimes = 0
         self.variable.set(self.OPTIONS[self.initialTimes])
 
@@ -502,6 +522,7 @@ def _quit():
     print "application is closed"
     app.quit()
     app.destroy()
+    sys.exit()
 
 if __name__ == '__main__':
     app = Application()
