@@ -130,9 +130,8 @@ class LeapRun(threading.Thread):
             t = threading.Thread(target=self.plot1)
             t.setDaemon(True)
             t.start()
-            t1 = threading.Thread(target=self.plot1)
             t.join()
-            time.sleep(0.5)
+            time.sleep(0.8)
 
             if self.threadSign == 0:
                 break
