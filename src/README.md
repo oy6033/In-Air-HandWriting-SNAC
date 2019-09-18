@@ -1,5 +1,5 @@
 # In-Air-HandWriting-SNAC
 
-#Introduction
+##Introduction
 GUI_Grid.py is not resizeable\
 GUI_Pack.py is resizeable
