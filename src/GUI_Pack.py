@@ -46,27 +46,10 @@ class LeapRun(threading.Thread):
         self.suffix = suffix
         self.threadSign = 1
 
-    def plot(self):
-        # plot trajectory of finger tip
-        # CAUTION: axis mapping: x -> y, y -> z, z -> x
-        self.ax1.cla()
+
+    def plot2(self):
         self.ax2.cla()
-        ys1 = [pos[0] for pos in self.tip_co]
-        zs1 = [pos[1] for pos in self.tip_co]
-        xs1 = [pos[2] for pos in self.tip_co]
-
-        self.ax1.scatter(xs1, ys1, zs1, s=0.2)
-
-        self.ax1.set_xlim3d(-500, 500)
-        self.ax1.set_ylim3d(-500, 500)
-        self.ax1.set_zlim3d(0, 600)
-
-        self.ax1.set_xlabel('X')
-        self.ax1.set_ylabel('Y')
-        self.ax1.set_zlabel('Z')
-
         # plot hand geometry
-
         joints = self.joint_series[0]
 
         for i in range(self.N):
@@ -102,7 +85,25 @@ class LeapRun(threading.Thread):
         self.ax2.set_xlabel('X')
         self.ax2.set_ylabel('Y')
         self.ax2.set_zlabel('Z')
+        self.canvas.draw_idle()
 
+    def plot1(self):
+        # plot trajectory of finger tip
+        # CAUTION: axis mapping: x -> y, y -> z, z -> x
+        self.ax1.cla()
+        ys1 = [pos[0] for pos in self.tip_co]
+        zs1 = [pos[1] for pos in self.tip_co]
+        xs1 = [pos[2] for pos in self.tip_co]
+
+        self.ax1.scatter(xs1, ys1, zs1, s=0.2)
+
+        self.ax1.set_xlim3d(-500, 500)
+        self.ax1.set_ylim3d(-500, 500)
+        self.ax1.set_zlim3d(0, 600)
+
+        self.ax1.set_xlabel('X')
+        self.ax1.set_ylabel('Y')
+        self.ax1.set_zlabel('Z')
         self.canvas.draw_idle()
         # self.writingTimes()
 
@@ -123,12 +124,15 @@ class LeapRun(threading.Thread):
             print('Exception raise failure')
 
     def realTimePlot(self):
+        # only run once
+        self.plot2()
         while (1):
-            t = threading.Thread(target=self.plot)
+            t = threading.Thread(target=self.plot1)
             t.setDaemon(True)
             t.start()
+            t1 = threading.Thread(target=self.plot1)
             t.join()
-            time.sleep(0.8)
+            time.sleep(0.5)
 
             if self.threadSign == 0:
                 break
@@ -142,10 +146,6 @@ class LeapRun(threading.Thread):
         print self.password
         print self.times
         print self.suffix
-
-        t2 = threading.Thread(target=self.realTimePlot)
-        t2.setDaemon(True)
-        t2.start()
 
         # N = 2000
         # if len(sys.argv) < 2:
@@ -182,6 +182,10 @@ class LeapRun(threading.Thread):
             len(frame.fingers), len(frame.tools), len(frame.gestures()))
         print(frame_str)
         self.log.insert('1.0', frame_str + "\n")
+
+        t2 = threading.Thread(target=self.realTimePlot)
+        t2.setDaemon(True)
+        t2.start()
 
         # sensor data
         # CAUTION: preallocate array space for speed
