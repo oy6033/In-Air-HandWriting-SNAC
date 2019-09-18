@@ -431,7 +431,7 @@ class Application(tk.Tk):
 
         suffixFrame = tk.Frame(master=inputFrame)
         tk.Label(master=suffixFrame, text="Please input suffix if needed:", font=("Helvetica", 12),width=40).pack(fill=X, side=LEFT)
-        self.suffix = tk.Entry(master=suffixFrame,width=40)
+        self.suffix = tk.Entry(master=suffixFrame, width=40)
         self.suffix.pack(fill=X, side =LEFT)
         suffixFrame.pack(fill='both', expand=YES)
 
