@@ -6,8 +6,11 @@ from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+from PIL import ImageTk
+import PIL.Image
 import Tkinter as tk
 from Tkinter import *
+import ttk
 from tkMessageBox import *
 import os, sys, inspect
 if not os.path.exists('../data'):
@@ -418,28 +421,61 @@ class Application(tk.Tk):
         toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
         toolbar.update()
 
+
+
         inputFrame = tk.Frame(master=mianFram)
         inputFrame.pack(fill='both', side=LEFT,expand=YES)
 
+        imageFrame = tk.Frame(master=inputFrame)
+        self.canvasImage = Canvas(master=imageFrame, width=40)
+        self.canvasImage.pack(fill='both', side=LEFT,expand=YES)
+        self.my_images = []
+        self.image_options = []
+        for i in range(1, 125):
+            self.image_options.append(str(i))
+            temp = str(i)+'.png'
+            img = PIL.Image.open('../img/p1dl1r3qbjceq3e41qfv114e1ufk4-'+temp)
+            img = img.resize((300,388),PIL.Image.ANTIALIAS)
+            self.my_images.append(ImageTk.PhotoImage(img))
+        self.images_index = 0
+        self.image_on_canvas = self.canvasImage.create_image(150, 150, image=self.my_images[self.images_index])
+
+        self.image_v = StringVar()
+        self.image_v.set("1")
+
+        comboboxFrame = tk.Frame(master=imageFrame)
+        w = ttk.Combobox(master=comboboxFrame,textvariable=self.image_v, values=self.image_options, justify='center',width=37)
+        w.pack(fill=X, side=LEFT)
+        w.bind("<<ComboboxSelected>>", self.choose_image)
+        w.bind("<Return>", self.choose_image)
+        comboboxFrame.pack(fill='both', expand=YES)
+
+        nextButtonFrame = tk.Frame(master=imageFrame)
+        ttk.Button(master=nextButtonFrame, text='Prev', command=self.prev_image).pack(fill=X, side=LEFT, expand=YES)
+        ttk.Button(master=nextButtonFrame, text='Next', command=self.next_image).pack(fill=X, side=LEFT, expand=YES)
+        nextButtonFrame.pack(fill='both', expand=YES)
+        imageFrame.pack(fill='both', expand=YES)
+
+
         accountFrame = tk.Frame(master=inputFrame)
-        tk.Label(master=accountFrame, text="Please input your account:", font=("Helvetica", 12),width=40).pack(fill=X, side=LEFT)
-        self.account = tk.Entry(master=accountFrame,width=40)
+        ttk.Label(master=accountFrame, text="Please input your account:",width=40).pack(fill=X, side=LEFT)
+        self.account = ttk.Entry(master=accountFrame,width=40)
         self.account.bind('<Return>',self.push_enter)
-        self.account.pack(fill=X, side = LEFT)
+        self.account.pack(fill=X, side = RIGHT)
         accountFrame.pack(fill='both', expand=YES)
 
         writingFrame = tk.Frame(master=inputFrame)
-        tk.Label(master=writingFrame, text="Please input your writing word:", font=("Helvetica", 12),width=40).pack(fill=X, side=LEFT)
-        self.password = tk.Entry(master=writingFrame,width=40)
+        ttk.Label(master=writingFrame, text="Please input your writing word:",width=40).pack(fill=X, side=LEFT)
+        self.password = ttk.Entry(master=writingFrame,width=40)
         self.password.bind('<Return>',self.push_enter)
-        self.password.pack(fill=X, side =LEFT)
+        self.password.pack(fill=X, side =RIGHT)
         writingFrame.pack(fill='both', expand=YES)
 
         suffixFrame = tk.Frame(master=inputFrame)
-        tk.Label(master=suffixFrame, text="Please input suffix if needed:", font=("Helvetica", 12),width=40).pack(fill=X, side=LEFT)
-        self.suffix = tk.Entry(master=suffixFrame, width=40)
+        ttk.Label(master=suffixFrame, text="Please input suffix if needed:",width=40).pack(fill=X, side=LEFT)
+        self.suffix = ttk.Entry(master=suffixFrame, width=40)
         self.suffix.bind('<Return>',self.push_enter)
-        self.suffix.pack(fill=X, side =LEFT)
+        self.suffix.pack(fill=X, side =RIGHT)
         suffixFrame.pack(fill='both', expand=YES)
 
         dropListFrame = tk.Frame(master=inputFrame)
@@ -447,9 +483,9 @@ class Application(tk.Tk):
         self.initialTimes = 0
         self.variable = StringVar(master=dropListFrame)
         self.variable.set(self.OPTIONS[self.initialTimes])
-        tk.Label(master=dropListFrame, text="Writing Times:", font=("Helvetica", 12), width=40).pack(fill=X, side=LEFT)
-        dropList = apply(OptionMenu, (dropListFrame, self.variable) + tuple(self.OPTIONS))
-        dropList.pack(fill=X, side=LEFT)
+        ttk.Label(master=dropListFrame, text="Writing Times:",  width=40).pack(fill=X, side=LEFT)
+        dropList = apply(tk.OptionMenu, (dropListFrame, self.variable) + tuple(self.OPTIONS))
+        dropList.pack(fill=X, side=RIGHT)
         MODES = [
             ("5 times", 5),
             ("10 times", 10),
@@ -457,27 +493,45 @@ class Application(tk.Tk):
         self.v = IntVar()
         self.v.set(5)
         for text, mode in MODES:
-            b = Radiobutton(dropListFrame, text=text,
+            b = ttk.Radiobutton(dropListFrame, text=text,
                             variable=self.v, value=mode, command=self.updateOption)
             b.pack(fill=X, side=LEFT,expand=YES)
         dropListFrame.pack(fill='both', expand=YES)
 
         buttonFrame = tk.Frame(master=inputFrame)
 
-        tk.Button(master=buttonFrame, text='Draw', font=("Helvetica", 12), command=self.thread).pack(fill=X, side=LEFT, expand=YES)
+        ttk.Button(master=buttonFrame, text='Draw', command=self.thread).pack(fill=X, side=LEFT, expand=YES)
 
-        tk.Button(master=buttonFrame, text='Kill All', font=("Helvetica", 12), command=self.kill_all).pack(fill=X, side=LEFT, expand=YES)
+        ttk.Button(master=buttonFrame, text='Kill All', command=self.kill_all).pack(fill=X, side=LEFT, expand=YES)
         buttonFrame.pack(fill='both', expand=YES)
 
-        scrollFrame = tk.Frame(master=inputFrame)
+        scrollFrame = ttk.Frame(master=inputFrame)
         scroll = Scrollbar(master=scrollFrame, orient=VERTICAL)
         scroll.pack(fill=Y, side=RIGHT, expand=YES)
-        self.log = tk.Text(master=scrollFrame, height=21, width=80, yscrollcommand=scroll.set)
-        self.log.pack(fill='both', side=LEFT, expand=YES)
+        self.log = tk.Text(master=scrollFrame, yscrollcommand=scroll.set, width=60)
+        self.log.pack(fill='both', side=LEFT)
         scroll.config(command=self.log.yview)
         scrollFrame.pack(fill='both', expand=YES)
 
-    def push_enter(self, event):
+    def choose_image(self, event):
+        index = int(self.image_v.get()) - 1
+        self.images_index = index
+        self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[index])
+
+    def next_image(self):
+        if self.images_index <123:
+            self.images_index = int(self.image_v.get())
+            self.image_v.set(str(self.images_index + 1))
+            self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
+
+    def prev_image(self):
+        if self.images_index >= 1:
+            self.images_index = int(self.image_v.get()) - 1
+            self.image_v.set(str(self.images_index))
+            self.images_index = self.images_index - 1
+            self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
+
+    def push_enter(self,event):
         self.thread()
 
     def updateOption(self):
