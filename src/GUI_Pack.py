@@ -236,9 +236,9 @@ class LeapRun(threading.Thread):
                 len(frame.fingers), len(frame.tools), len(frame.gestures()))
             print(frame_str)
 
-            # app.message('filesave', frame_str, 0, len(frame_str), 'purple', TRUE)
+            app.message('frame_str', frame_str+'\n', 0, len(frame_str), None, False)
 
-            self.log.insert('1.0', frame_str + "\n")
+            # self.log.insert('1.0', frame_str + "\n")
 
             # catch index out of range
             try:
@@ -332,14 +332,13 @@ class LeapRun(threading.Thread):
 
         # dump sensor data to file
         print_range = "# of frames: %d, last ts: %d, out of range: %d\n" % (l, tss[l - 1], out_of_range)
-        self.log.insert('1.0', print_range)
-        # app.message('filesave', print_range, 0, len(print_range), 'purple', TRUE)
-        self.log.tag_add('outofrange', '1.'+str(print_range.find("out")), '1.' + str(len(print_range)))
+        # self.log.insert('1.0', print_range)
+        # self.log.tag_add('outofrange', '1.'+str(print_range.find("out")), '1.' + str(len(print_range)))
         if out_of_range > 5:
-            self.log.tag_config('outofrange', foreground='red', underline=True)
+            app.message('showrange', print_range, print_range.find("out"), len(print_range), 'red', False)
             pass
         else:
-            self.log.tag_config('outofrange', foreground='blue', underline=True)
+            app.message('showrange', print_range, print_range.find("out"), len(print_range), 'blue', False)
             app.writingTimes()
         print("# of frames: %d, last ts: %d, out of range: %d" % (l, tss[l - 1], out_of_range))
 
