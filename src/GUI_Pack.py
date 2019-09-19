@@ -185,6 +185,7 @@ class LeapRun(threading.Thread):
             frame.id - init_frame.id, (frame.timestamp - init_frame.timestamp) / 1000, len(frame.hands),
             len(frame.fingers), len(frame.tools), len(frame.gestures()))
         print(frame_str)
+
         self.log.insert('1.0', frame_str + "\n")
 
         t2 = threading.Thread(target=self.realTimePlot)
@@ -236,9 +237,7 @@ class LeapRun(threading.Thread):
                 len(frame.fingers), len(frame.tools), len(frame.gestures()))
             print(frame_str)
 
-            app.message('frame_str', frame_str+'\n', 0, len(frame_str), None, False)
-
-            # self.log.insert('1.0', frame_str + "\n")
+            self.log.insert('1.0', frame_str + "\n")
 
             # catch index out of range
             try:
@@ -332,8 +331,6 @@ class LeapRun(threading.Thread):
 
         # dump sensor data to file
         print_range = "# of frames: %d, last ts: %d, out of range: %d\n" % (l, tss[l - 1], out_of_range)
-        # self.log.insert('1.0', print_range)
-        # self.log.tag_add('outofrange', '1.'+str(print_range.find("out")), '1.' + str(len(print_range)))
         if out_of_range > 5:
             app.message('showrange', print_range, print_range.find("out"), len(print_range), 'red', False)
             pass
