@@ -409,7 +409,7 @@ class Application(tk.Tk):
     def createWidgets(self):
         mianFram = Frame(master=self)
         mianFram.pack(fill='both',expand=YES)
-        self.fig = plt.figure(figsize=(6,8))
+        self.fig = plt.figure(figsize=(5,6))
         self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
         self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
         self.canvas = FigureCanvasTkAgg(self.fig, master=mianFram)
