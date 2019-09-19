@@ -141,7 +141,9 @@ class LeapRun(threading.Thread):
         if t.isAlive():
             print self.log.insert('1.0', "Error, thread is not killed, please check\n")
         else:
-            print self.log.insert('1.0', "Plot is completed, threads has been killed\n")
+            message = 'Plot is completed, threads has been killed\n'
+            app.message('plotcompleted',message,0,len(message),'orange',FALSE)
+            # print self.log.insert('1.0', "Plot is completed, threads has been killed\n")
 
     def run(self):
         print self.account
@@ -233,6 +235,9 @@ class LeapRun(threading.Thread):
                 frame.id - init_frame.id, (frame.timestamp - init_frame.timestamp) / 1000, len(frame.hands),
                 len(frame.fingers), len(frame.tools), len(frame.gestures()))
             print(frame_str)
+
+            # app.message('filesave', frame_str, 0, len(frame_str), 'purple', TRUE)
+
             self.log.insert('1.0', frame_str + "\n")
 
             # catch index out of range
@@ -328,6 +333,7 @@ class LeapRun(threading.Thread):
         # dump sensor data to file
         print_range = "# of frames: %d, last ts: %d, out of range: %d\n" % (l, tss[l - 1], out_of_range)
         self.log.insert('1.0', print_range)
+        # app.message('filesave', print_range, 0, len(print_range), 'purple', TRUE)
         self.log.tag_add('outofrange', '1.'+str(print_range.find("out")), '1.' + str(len(print_range)))
         if out_of_range > 5:
             self.log.tag_config('outofrange', foreground='red', underline=True)
@@ -395,7 +401,8 @@ class LeapRun(threading.Thread):
         fd.flush()
         fd.close()
         self.threadSign = 0
-        self.log.insert('1.0', fn + " has been saved successfully\n")
+        message = fn + " has been saved successfully\n"
+        app.message('filesave', message, 0, len(message), 'purple', TRUE)
         # app.plot(self.tip_co, self.joint_series, self.confs, self.N)
 
 
@@ -514,15 +521,28 @@ class Application(tk.Tk):
         scrollFrame.pack(fill='both', expand=YES)
 
     def choose_image(self, event):
-        index = int(self.image_v.get()) - 1
-        self.images_index = index
-        self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[index])
+        index = int(self.image_v.get())
+        if(index <= 124 and index >= 1):
+            index = index - 1
+            self.images_index = index
+            self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[index])
+        else:
+            message = 'Error: 1<= Index <=124\n'
+            self.message('outofrange',message,0,len(message),'red',TRUE)
+
+    def message(self, message_name, message, start, end, color,underline):
+        self.log.insert('1.0', message)
+        self.log.tag_add(message_name, '1.'+str(start), '1.' + str(end))
+        self.log.tag_config(message_name, foreground=color, underline=underline)
 
     def next_image(self):
         if self.images_index <123:
             self.images_index = int(self.image_v.get())
             self.image_v.set(str(self.images_index + 1))
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
+        else:
+            message = 'Error: 1<= Index <=124\n'
+            self.message('outofrange',message,0,len(message),'red',TRUE)
 
     def prev_image(self):
         if self.images_index >= 1:
@@ -530,18 +550,26 @@ class Application(tk.Tk):
             self.image_v.set(str(self.images_index))
             self.images_index = self.images_index - 1
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
+        else:
+            message = 'Error: 1<= Index <=124\n'
+            self.message('outofrange',message,0,len(message),'red',TRUE)
 
     def push_enter(self,event):
         self.thread()
 
     def updateOption(self):
         self.maxtimes = self.v.get()
-        self.log.insert('1.0', "Max times has been changed to "+str(self.v.get()) + "\n")
+        message = "Max times has been changed to "+str(self.v.get()) + "\n"
+        self.message('changetimes',message,0,len(message),'blue',FALSE)
 
     def kill_all(self):
-        self.t1.raise_exception()
-        self.t1.threadSign = 0
-        self.log.insert('1.0', "Threads has been Killed\n")
+        try:
+            self.t1.raise_exception()
+            self.t1.threadSign = 0
+            message = 'Threads has been Killed\n'
+            self.message('killthread',message,0,len(message),'blue',FALSE)
+        except:
+            print "no thread"
 
     def isRunning(self):
         try:
