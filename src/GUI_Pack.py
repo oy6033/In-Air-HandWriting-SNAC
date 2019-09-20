@@ -152,7 +152,7 @@ class LeapRun(threading.Thread):
         else:
             message = 'Plot is completed, threads has been killed\n'
             self.message('plotcompleted',message,0,len(message),'orange',FALSE, FALSE)
-            # print self.log.insert('1.0', "Plot is completed, threads has been killed\n")
+
 
     def run(self):
         print self.account
@@ -189,7 +189,6 @@ class LeapRun(threading.Thread):
             else:
                 frame_id = init_frame.id
                 break
-
 
         t2 = threading.Thread(target=self.realTimePlot)
         t2.setDaemon(True)
