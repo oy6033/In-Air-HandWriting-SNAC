@@ -346,10 +346,10 @@ class LeapRun(threading.Thread):
         # dump sensor data to file
         print_range = "# of frames: %d, last ts: %d, out of range: %d\n" % (l, tss[l - 1], out_of_range)
         if out_of_range > 5:
-            app.message('showrange', print_range, print_range.find("out"), len(print_range), 'red', False)
+            self.message('showrange', print_range, print_range.find("out"), len(print_range), 'red', False, True)
             pass
         else:
-            app.message('showrange', print_range, print_range.find("out"), len(print_range), 'blue', False)
+            self.message('showrange', print_range, print_range.find("out"), len(print_range), 'blue', False, True)
             app.writingTimes()
         print("# of frames: %d, last ts: %d, out of range: %d" % (l, tss[l - 1], out_of_range))
 
@@ -540,12 +540,15 @@ class Application(tk.Tk):
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',False)
+            self.message('outofrange',message,0,len(message),'red',False, True)
 
-    def message(self, message_name, message, start, end, color,underline):
-        self.log.insert('1.0', message)
-        self.log.tag_add(message_name, '1.'+str(start), '1.' + str(end))
-        self.log.tag_config(message_name, foreground=color, underline=underline)
+    def message(self, message_name, message, start, end, color,underline, is_open):
+        if is_open == False:
+            self.log.insert('1.0', message)
+        else:
+            self.log.insert('1.0', message)
+            self.log.tag_add(message_name, '1.'+str(start), '1.' + str(end))
+            self.log.tag_config(message_name, foreground=color, underline=underline)
 
     def next_image(self):
         if self.images_index <123:
@@ -554,7 +557,7 @@ class Application(tk.Tk):
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',False)
+            self.message('outofrange',message,0,len(message),'red',False ,True)
 
     def prev_image(self):
         if self.images_index >= 1:
@@ -564,7 +567,7 @@ class Application(tk.Tk):
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',False)
+            self.message('outofrange',message,0,len(message),'red',False ,True)
 
     def push_enter(self,event):
         self.thread()
@@ -572,14 +575,14 @@ class Application(tk.Tk):
     def updateOption(self):
         self.maxtimes = self.v.get()
         message = "Max times has been changed to "+str(self.v.get()) + "\n"
-        self.message('changetimes',message,0,len(message),'blue',FALSE)
+        self.message('changetimes',message,0,len(message),'blue',FALSE, True)
 
     def kill_all(self):
         try:
             self.t1.raise_exception()
             self.t1.threadSign = 0
             message = 'Threads has been Killed\n'
-            self.message('killthread',message,0,len(message),'blue',FALSE)
+            self.message('killthread',message,0,len(message),'blue',FALSE, True)
         except:
             print "no thread"
 
