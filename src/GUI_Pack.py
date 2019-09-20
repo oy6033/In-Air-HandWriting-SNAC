@@ -93,7 +93,7 @@ class LeapRun(threading.Thread):
     def plot1(self):
         # plot trajectory of finger tip
         # CAUTION: axis mapping: x -> y, y -> z, z -> x
-        self.ax1.cla()
+        self.ax1.clear()
         ys1 = [pos[0] for pos in self.tip_co]
         zs1 = [pos[1] for pos in self.tip_co]
         xs1 = [pos[2] for pos in self.tip_co]
@@ -126,23 +126,32 @@ class LeapRun(threading.Thread):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             print('Exception raise failure')
 
+    def message(self, message_name, message, start, end, color,underline, is_open):
+        if is_open == FALSE:
+            self.log.insert('1.0', message)
+        else:
+            self.log.insert('1.0', message)
+            self.log.tag_add(message_name, '1.'+str(start), '1.' + str(end))
+            self.log.tag_config(message_name, foreground=color, underline=underline)
+
     def realTimePlot(self):
         # only run once
-        self.plot2()
         while (1):
             t = threading.Thread(target=self.plot1)
             t.setDaemon(True)
             t.start()
             t.join()
             time.sleep(0.8)
-
             if self.threadSign == 0:
                 break
+
+        self.plot2()
+
         if t.isAlive():
             print self.log.insert('1.0', "Error, thread is not killed, please check\n")
         else:
             message = 'Plot is completed, threads has been killed\n'
-            app.message('plotcompleted',message,0,len(message),'orange',FALSE)
+            self.message('plotcompleted',message,0,len(message),'orange',FALSE, FALSE)
             # print self.log.insert('1.0', "Plot is completed, threads has been killed\n")
 
     def run(self):
@@ -150,6 +159,7 @@ class LeapRun(threading.Thread):
         print self.password
         print self.times
         print self.suffix
+
 
         # N = 2000
         # if len(sys.argv) < 2:
@@ -171,13 +181,20 @@ class LeapRun(threading.Thread):
 
         # wait until the first frame is ready
         while True:
-
+            if self.threadSign == 0:
+                break
             init_frame = controller.frame()
             if frame_id == init_frame.id:
                 continue
             else:
                 frame_id = init_frame.id
                 break
+
+
+        t2 = threading.Thread(target=self.realTimePlot)
+        t2.setDaemon(True)
+        t2.start()
+
 
         frame = init_frame
 
@@ -188,9 +205,6 @@ class LeapRun(threading.Thread):
 
         self.log.insert('1.0', frame_str + "\n")
 
-        t2 = threading.Thread(target=self.realTimePlot)
-        t2.setDaemon(True)
-        t2.start()
 
         # sensor data
         # CAUTION: preallocate array space for speed
@@ -398,7 +412,7 @@ class LeapRun(threading.Thread):
         fd.close()
         self.threadSign = 0
         message = fn + " has been saved successfully\n"
-        app.message('filesave', message, 0, len(message), 'purple', TRUE)
+        self.message('filesave', message, 0, len(message), 'purple', False, True)
         # app.plot(self.tip_co, self.joint_series, self.confs, self.N)
 
 
@@ -414,7 +428,9 @@ class Application(tk.Tk):
         mianFram.pack(fill='both',expand=YES)
         self.fig = plt.figure(figsize=(5,6))
         self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
+
         self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
+
         self.canvas = FigureCanvasTkAgg(self.fig, master=mianFram)
         toolbarFrame = tk.Frame(master=mianFram)
         toolbarFrame.pack(fill='both', side=BOTTOM)
@@ -508,7 +524,7 @@ class Application(tk.Tk):
         ttk.Button(master=buttonFrame, text='Kill All', command=self.kill_all).pack(fill=X, side=LEFT, expand=YES)
         buttonFrame.pack(fill='both', expand=YES)
 
-        scrollFrame = ttk.Frame(master=inputFrame)
+        scrollFrame = tk.Frame(master=inputFrame)
         scroll = Scrollbar(master=scrollFrame, orient=VERTICAL)
         scroll.pack(fill=Y, side=RIGHT, expand=YES)
         self.log = tk.Text(master=scrollFrame, yscrollcommand=scroll.set, width=60)
