@@ -540,7 +540,7 @@ class Application(tk.Tk):
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',TRUE)
+            self.message('outofrange',message,0,len(message),'red',False)
 
     def message(self, message_name, message, start, end, color,underline):
         self.log.insert('1.0', message)
@@ -554,7 +554,7 @@ class Application(tk.Tk):
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',TRUE)
+            self.message('outofrange',message,0,len(message),'red',False)
 
     def prev_image(self):
         if self.images_index >= 1:
@@ -564,7 +564,7 @@ class Application(tk.Tk):
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',TRUE)
+            self.message('outofrange',message,0,len(message),'red',False)
 
     def push_enter(self,event):
         self.thread()
