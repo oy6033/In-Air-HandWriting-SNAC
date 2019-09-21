@@ -594,6 +594,8 @@ class Application(tk.Tk):
         print self.file.item(item, 'text')
         if 'linux' in str(sys.platform):
             subprocess.call(('xdg-open', '../data/' + self.file.item(item, 'text')))
+        elif 'win32' in str(sys.platform):
+            os.startfile('..\\data\\' + self.file.item(item, 'text'))
 
     def updateOption(self):
         self.maxtimes = self.v.get()
