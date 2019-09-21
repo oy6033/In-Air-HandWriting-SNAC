@@ -16,7 +16,7 @@ Pre-Install:
 Run command to build package:\
 ``` pyinstaller -F 'GUI_Pack.py' --hidden-import='PIL._tkinter_finder'```
 
-Run command to executable directly:\
+Run command to execute directly:\
 ``` python GUI_Pack.py```
 
 ## Support
