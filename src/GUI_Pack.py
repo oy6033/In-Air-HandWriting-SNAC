@@ -535,7 +535,7 @@ class Application(tk.Tk):
         self.log = tk.Text(master=self.notebook)
         self.file = ttk.Treeview(master=self.notebook, columns=("A", "B"))
         self.file.heading("#0", text='Item')
-        self.file.heading("#1", text='Writing Times')
+        self.file.heading("#1", text='Max Times')
         self.file.heading("#2", text='Modification Date')
         self.file.column('#0', anchor="c", stretch=tk.YES)
         self.file.column("#1", anchor="c", stretch=tk.YES)
