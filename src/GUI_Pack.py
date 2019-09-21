@@ -1,3 +1,4 @@
+import datetime
 import time
 import matplotlib
 matplotlib.use('TkAgg')
@@ -412,6 +413,7 @@ class LeapRun(threading.Thread):
         self.threadSign = 0
         message = fn + " has been saved successfully\n"
         self.message('filesave', message, 0, len(message), 'purple', False, True)
+        app.file.insert('',0,text=fn,values=(str(app.maxtimes),str(datetime.datetime.now())))
         # app.plot(self.tip_co, self.joint_series, self.confs, self.N)
 
 
@@ -538,9 +540,9 @@ class Application(tk.Tk):
         self.file.heading("#0", text='Item')
         self.file.heading("#1", text='Writing Times')
         self.file.heading("#2", text='Modification Date')
-        self.file.column('#0', stretch=tk.YES)
-        self.file.column("#1", stretch=tk.YES)
-        self.file.column('#2', stretch=tk.YES)
+        self.file.column('#0', anchor="c",stretch=tk.YES)
+        self.file.column("#1", anchor="c",stretch=tk.YES)
+        self.file.column('#2', anchor="c",stretch=tk.YES)
         self.notebook.add(self.log,text="Output")
         self.notebook.add(self.file, text="File")
         self.notebook.pack(fill='both',expand=YES)
