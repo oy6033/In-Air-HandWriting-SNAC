@@ -483,6 +483,7 @@ class Application(tk.Tk):
         ttk.Label(master=accountFrame, text="Please input your account:", width=40).pack(fill=X, side=LEFT)
         self.account = ttk.Entry(master=accountFrame, width=40)
         self.account.bind('<Return>', self.push_enter)
+        self.account.bind('<Control-KeyRelease-a>', self.select_all)
         self.account.pack(fill=X, side=RIGHT)
         accountFrame.pack(fill='both', expand=YES)
 
@@ -490,6 +491,7 @@ class Application(tk.Tk):
         ttk.Label(master=writingFrame, text="Please input your writing word:", width=40).pack(fill=X, side=LEFT)
         self.password = ttk.Entry(master=writingFrame, width=40)
         self.password.bind('<Return>', self.push_enter)
+        self.password.bind('<Control-KeyRelease-a>', self.select_all)
         self.password.pack(fill=X, side=RIGHT)
         writingFrame.pack(fill='both', expand=YES)
 
@@ -497,6 +499,7 @@ class Application(tk.Tk):
         ttk.Label(master=suffixFrame, text="Please input suffix if needed:", width=40).pack(fill=X, side=LEFT)
         self.suffix = ttk.Entry(master=suffixFrame, width=40)
         self.suffix.bind('<Return>', self.push_enter)
+        self.suffix.bind('<Control-KeyRelease-a>', self.select_all)
         self.suffix.pack(fill=X, side=RIGHT)
         suffixFrame.pack(fill='both', expand=YES)
 
@@ -551,6 +554,10 @@ class Application(tk.Tk):
         else:
             message = 'Error: 1<= Index <=124\n'
             self.message('outofrange', message, 0, len(message), 'red', False, True)
+
+    def select_all(self, event):
+        event.widget.select_range(0,'end')
+        event.widget.icursor('end')
 
     def message(self, message_name, message, start, end, color, underline, is_open):
         if is_open == False:
