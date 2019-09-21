@@ -1,6 +1,7 @@
 import datetime
 import time
 import matplotlib
+
 matplotlib.use('TkAgg')
 import numpy as np
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
@@ -13,11 +14,13 @@ import Tkinter as tk
 from Tkinter import *
 import ttk
 from tkMessageBox import *
-import os, sys, inspect
+import os, sys, inspect, subprocess
+
 if not os.path.exists('../data'):
     os.makedirs('../data')
 import threading
 import ctypes
+
 # Leap Instantiation
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 if 'linux' in str(sys.platform):
@@ -30,6 +33,7 @@ else:
     sys.exit()
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
+
 
 class LeapRun(threading.Thread):
 
@@ -49,7 +53,6 @@ class LeapRun(threading.Thread):
         self.log = log
         self.suffix = suffix
         self.threadSign = 1
-
 
     def plot2(self):
         self.ax2.cla()
@@ -127,12 +130,12 @@ class LeapRun(threading.Thread):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             print('Exception raise failure')
 
-    def message(self, message_name, message, start, end, color,underline, is_open):
+    def message(self, message_name, message, start, end, color, underline, is_open):
         if is_open == FALSE:
             self.log.insert('1.0', message)
         else:
             self.log.insert('1.0', message)
-            self.log.tag_add(message_name, '1.'+str(start), '1.' + str(end))
+            self.log.tag_add(message_name, '1.' + str(start), '1.' + str(end))
             self.log.tag_config(message_name, foreground=color, underline=underline)
 
     def realTimePlot(self):
@@ -152,15 +155,13 @@ class LeapRun(threading.Thread):
             print self.log.insert('1.0', "Error, thread is not killed, please check\n")
         else:
             message = 'Plot is completed, threads has been killed\n'
-            self.message('plotcompleted',message,0,len(message),'orange',FALSE, FALSE)
-
+            self.message('plotcompleted', message, 0, len(message), 'orange', FALSE, FALSE)
 
     def run(self):
         print self.account
         print self.password
         print self.times
         print self.suffix
-
 
         # N = 2000
         # if len(sys.argv) < 2:
@@ -195,7 +196,6 @@ class LeapRun(threading.Thread):
         t2.setDaemon(True)
         t2.start()
 
-
         frame = init_frame
 
         frame_str = "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
@@ -204,7 +204,6 @@ class LeapRun(threading.Thread):
         print(frame_str)
 
         self.log.insert('1.0', frame_str + "\n")
-
 
         # sensor data
         # CAUTION: preallocate array space for speed
@@ -257,9 +256,8 @@ class LeapRun(threading.Thread):
             try:
                 tss[i] = frame.timestamp
             except IndexError:
-                self.log.insert('1.0',"ts array index out of range\n")
+                self.log.insert('1.0', "ts array index out of range\n")
                 app.kill_all()
-
 
             valids[i] = 1
 
@@ -353,7 +351,7 @@ class LeapRun(threading.Thread):
             app.writingTimes()
         print("# of frames: %d, last ts: %d, out of range: %d" % (l, tss[l - 1], out_of_range))
 
-        fd = open('../data/'+fn, 'w')
+        fd = open('../data/' + fn, 'w')
         for i in range(0, l):
 
             tip = tuple(self.tip_co[i])
@@ -413,7 +411,13 @@ class LeapRun(threading.Thread):
         self.threadSign = 0
         message = fn + " has been saved successfully\n"
         self.message('filesave', message, 0, len(message), 'purple', False, True)
-        app.file.insert('',0,text=fn,values=(str(app.maxtimes),str(datetime.datetime.now())))
+
+        if(app.file.exists(fn)):
+            app.file.delete(fn)
+            app.file.insert('', 0, text=fn, iid=fn,values=(str(app.maxtimes), str(datetime.datetime.now())))
+        else:
+            app.file.insert('', 0, text=fn, iid=fn, values=(str(app.maxtimes), str(datetime.datetime.now())))
+        app.file.bind('<Double-1>', app.open_file)
         # app.plot(self.tip_co, self.joint_series, self.confs, self.N)
 
 
@@ -426,8 +430,8 @@ class Application(tk.Tk):
 
     def createWidgets(self):
         mianFram = Frame(master=self)
-        mianFram.pack(fill='both',expand=YES)
-        self.fig = plt.figure(figsize=(5,6))
+        mianFram.pack(fill='both', expand=YES)
+        self.fig = plt.figure(figsize=(5, 6))
         self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
 
         self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
@@ -441,21 +445,19 @@ class Application(tk.Tk):
         toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
         toolbar.update()
 
-
-
         inputFrame = tk.Frame(master=mianFram)
-        inputFrame.pack(fill='both', side=LEFT,expand=YES)
+        inputFrame.pack(fill='both', side=LEFT, expand=YES)
 
         imageFrame = tk.Frame(master=inputFrame)
         self.canvasImage = Canvas(master=imageFrame, width=40)
-        self.canvasImage.pack(fill='both', side=LEFT,expand=YES)
+        self.canvasImage.pack(fill='both', side=LEFT, expand=YES)
         self.my_images = []
         self.image_options = []
         for i in range(1, 125):
             self.image_options.append(str(i))
-            temp = str(i)+'.png'
-            img = PIL.Image.open('../img/p1dl1r3qbjceq3e41qfv114e1ufk4-'+temp)
-            img = img.resize((300,388),PIL.Image.ANTIALIAS)
+            temp = str(i) + '.png'
+            img = PIL.Image.open('../img/p1dl1r3qbjceq3e41qfv114e1ufk4-' + temp)
+            img = img.resize((300, 388), PIL.Image.ANTIALIAS)
             self.my_images.append(ImageTk.PhotoImage(img))
         self.images_index = 0
         self.image_on_canvas = self.canvasImage.create_image(150, 150, image=self.my_images[self.images_index])
@@ -464,7 +466,8 @@ class Application(tk.Tk):
         self.image_v.set("1")
 
         comboboxFrame = tk.Frame(master=imageFrame)
-        w = ttk.Combobox(master=comboboxFrame,textvariable=self.image_v, values=self.image_options, justify='center',width=37)
+        w = ttk.Combobox(master=comboboxFrame, textvariable=self.image_v, values=self.image_options, justify='center',
+                         width=37)
         w.pack(fill=X, side=LEFT)
         w.bind("<<ComboboxSelected>>", self.choose_image)
         w.bind("<Return>", self.choose_image)
@@ -476,34 +479,33 @@ class Application(tk.Tk):
         nextButtonFrame.pack(fill='both', expand=YES)
         imageFrame.pack(fill='both', expand=YES)
 
-
         accountFrame = tk.Frame(master=inputFrame)
-        ttk.Label(master=accountFrame, text="Please input your account:",width=40).pack(fill=X, side=LEFT)
-        self.account = ttk.Entry(master=accountFrame,width=40)
-        self.account.bind('<Return>',self.push_enter)
-        self.account.pack(fill=X, side = RIGHT)
+        ttk.Label(master=accountFrame, text="Please input your account:", width=40).pack(fill=X, side=LEFT)
+        self.account = ttk.Entry(master=accountFrame, width=40)
+        self.account.bind('<Return>', self.push_enter)
+        self.account.pack(fill=X, side=RIGHT)
         accountFrame.pack(fill='both', expand=YES)
 
         writingFrame = tk.Frame(master=inputFrame)
-        ttk.Label(master=writingFrame, text="Please input your writing word:",width=40).pack(fill=X, side=LEFT)
-        self.password = ttk.Entry(master=writingFrame,width=40)
-        self.password.bind('<Return>',self.push_enter)
-        self.password.pack(fill=X, side =RIGHT)
+        ttk.Label(master=writingFrame, text="Please input your writing word:", width=40).pack(fill=X, side=LEFT)
+        self.password = ttk.Entry(master=writingFrame, width=40)
+        self.password.bind('<Return>', self.push_enter)
+        self.password.pack(fill=X, side=RIGHT)
         writingFrame.pack(fill='both', expand=YES)
 
         suffixFrame = tk.Frame(master=inputFrame)
-        ttk.Label(master=suffixFrame, text="Please input suffix if needed:",width=40).pack(fill=X, side=LEFT)
+        ttk.Label(master=suffixFrame, text="Please input suffix if needed:", width=40).pack(fill=X, side=LEFT)
         self.suffix = ttk.Entry(master=suffixFrame, width=40)
-        self.suffix.bind('<Return>',self.push_enter)
-        self.suffix.pack(fill=X, side =RIGHT)
+        self.suffix.bind('<Return>', self.push_enter)
+        self.suffix.pack(fill=X, side=RIGHT)
         suffixFrame.pack(fill='both', expand=YES)
 
         dropListFrame = tk.Frame(master=inputFrame)
-        self.OPTIONS = ["1", "2", "3", "4", "5", "6","7","8","9","10"]
+        self.OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
         self.initialTimes = 0
         self.variable = StringVar(master=dropListFrame)
         self.variable.set(self.OPTIONS[self.initialTimes])
-        ttk.Label(master=dropListFrame, text="Writing Times:",  width=40).pack(fill=X, side=LEFT)
+        ttk.Label(master=dropListFrame, text="Writing Times:", width=40).pack(fill=X, side=LEFT)
         dropList = apply(tk.OptionMenu, (dropListFrame, self.variable) + tuple(self.OPTIONS))
         dropList.pack(fill=X, side=RIGHT)
         MODES = [
@@ -514,8 +516,8 @@ class Application(tk.Tk):
         self.v.set(5)
         for text, mode in MODES:
             b = ttk.Radiobutton(dropListFrame, text=text,
-                            variable=self.v, value=mode, command=self.updateOption)
-            b.pack(fill=X, side=LEFT,expand=YES)
+                                variable=self.v, value=mode, command=self.updateOption)
+            b.pack(fill=X, side=LEFT, expand=YES)
         dropListFrame.pack(fill='both', expand=YES)
 
         buttonFrame = tk.Frame(master=inputFrame)
@@ -525,55 +527,47 @@ class Application(tk.Tk):
         ttk.Button(master=buttonFrame, text='Kill All', command=self.kill_all).pack(fill=X, side=LEFT, expand=YES)
         buttonFrame.pack(fill='both', expand=YES)
 
-        # scrollFrame = tk.Frame(master=inputFrame)
-        # scroll = Scrollbar(master=scrollFrame, orient=VERTICAL)
-        # scroll.pack(fill=Y, side=RIGHT, expand=YES)
-        # self.log = tk.Text(master=scrollFrame, yscrollcommand=scroll.set, width=60)
-        # self.log.pack(fill='both', side=LEFT)
-        # scroll.config(command=self.log.yview)
-        # scrollFrame.pack(fill='both', expand=YES)
-
         noteBookFrame = tk.Frame(master=inputFrame)
         self.notebook = ttk.Notebook(master=noteBookFrame)
         self.log = tk.Text(master=self.notebook)
-        self.file = ttk.Treeview(master=self.notebook,columns=("A","B"))
+        self.file = ttk.Treeview(master=self.notebook, columns=("A", "B"))
         self.file.heading("#0", text='Item')
         self.file.heading("#1", text='Writing Times')
         self.file.heading("#2", text='Modification Date')
-        self.file.column('#0', anchor="c",stretch=tk.YES)
-        self.file.column("#1", anchor="c",stretch=tk.YES)
-        self.file.column('#2', anchor="c",stretch=tk.YES)
-        self.notebook.add(self.log,text="Output")
+        self.file.column('#0', anchor="c", stretch=tk.YES)
+        self.file.column("#1", anchor="c", stretch=tk.YES)
+        self.file.column('#2', anchor="c", stretch=tk.YES)
+        self.notebook.add(self.log, text="Output")
         self.notebook.add(self.file, text="File")
-        self.notebook.pack(fill='both',expand=YES)
+        self.notebook.pack(fill='both', expand=YES)
         noteBookFrame.pack(fill='both', expand=YES)
 
     def choose_image(self, event):
         index = int(self.image_v.get())
-        if(index <= 124 and index >= 1):
+        if (index <= 124 and index >= 1):
             index = index - 1
             self.images_index = index
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',False, True)
+            self.message('outofrange', message, 0, len(message), 'red', False, True)
 
-    def message(self, message_name, message, start, end, color,underline, is_open):
+    def message(self, message_name, message, start, end, color, underline, is_open):
         if is_open == False:
             self.log.insert('1.0', message)
         else:
             self.log.insert('1.0', message)
-            self.log.tag_add(message_name, '1.'+str(start), '1.' + str(end))
+            self.log.tag_add(message_name, '1.' + str(start), '1.' + str(end))
             self.log.tag_config(message_name, foreground=color, underline=underline)
 
     def next_image(self):
-        if self.images_index <123:
+        if self.images_index < 123:
             self.images_index = int(self.image_v.get())
             self.image_v.set(str(self.images_index + 1))
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',False ,True)
+            self.message('outofrange', message, 0, len(message), 'red', False, True)
 
     def prev_image(self):
         if self.images_index >= 1:
@@ -583,22 +577,28 @@ class Application(tk.Tk):
             self.canvasImage.itemconfig(self.image_on_canvas, image=self.my_images[self.images_index])
         else:
             message = 'Error: 1<= Index <=124\n'
-            self.message('outofrange',message,0,len(message),'red',False ,True)
+            self.message('outofrange', message, 0, len(message), 'red', False, True)
 
-    def push_enter(self,event):
+    def push_enter(self, event):
         self.thread()
+
+    def open_file(self, event):
+        item = self.file.selection()[0]
+        print self.file.item(item, 'text')
+        if 'linux' in str(sys.platform):
+            subprocess.call(('xdg-open', '../data/' + self.file.item(item, 'text')))
 
     def updateOption(self):
         self.maxtimes = self.v.get()
-        message = "Max times has been changed to "+str(self.v.get()) + "\n"
-        self.message('changetimes',message,0,len(message),'blue',FALSE, True)
+        message = "Max times has been changed to " + str(self.v.get()) + "\n"
+        self.message('changetimes', message, 0, len(message), 'blue', FALSE, True)
 
     def kill_all(self):
         try:
             self.t1.raise_exception()
             self.t1.threadSign = 0
             message = 'Threads has been Killed\n'
-            self.message('killthread',message,0,len(message),'blue',FALSE, True)
+            self.message('killthread', message, 0, len(message), 'blue', FALSE, True)
         except:
             print "no thread"
 
@@ -639,6 +639,7 @@ def _quit():
     app.quit()
     app.destroy()
     sys.exit()
+
 
 if __name__ == '__main__':
     app = Application()
