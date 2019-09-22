@@ -542,6 +542,8 @@ class Application(tk.Tk):
         self.file.column('#2', anchor="c", stretch=tk.YES)
         self.file.bind('<Double-1>', self.open_file)
         self.menu = tk.Menu(self.file,tearoff=0)
+        self.menu.add_command(label="open", command=self.open_file_menu)
+        self.menu.add_separator()
         self.menu.add_command(label="delete",command=self.delete_file)
         self.file.bind('<Button-3>', self.show_menu)
         self.notebook.add(self.log, text="Output")
@@ -606,6 +608,17 @@ class Application(tk.Tk):
             elif 'win32' in str(sys.platform):
                 os.remove('..\\data\\' + self.file.item(item, 'text'))
             self.file.delete(item)
+        except:
+            showerror("Error", "Error, please choose a item first")
+
+    def open_file_menu(self):
+        try:
+            item = self.file.selection()[0]
+            print self.file.item(item, 'text')
+            if 'linux' in str(sys.platform):
+                subprocess.call(('xdg-open', '../data/' + self.file.item(item, 'text')))
+            elif 'win32' in str(sys.platform):
+                os.startfile('..\\data\\' + self.file.item(item, 'text'))
         except:
             showerror("Error", "Error, please choose a item first")
 
