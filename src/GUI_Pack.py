@@ -417,7 +417,7 @@ class LeapRun(threading.Thread):
             app.file.insert('', 0, text=fn, iid=fn,values=(str(app.maxtimes), str(datetime.datetime.now())))
         else:
             app.file.insert('', 0, text=fn, iid=fn, values=(str(app.maxtimes), str(datetime.datetime.now())))
-        app.file.bind('<Double-1>', app.open_file)
+
         # app.plot(self.tip_co, self.joint_series, self.confs, self.N)
 
 
@@ -540,10 +540,17 @@ class Application(tk.Tk):
         self.file.column('#0', anchor="c", stretch=tk.YES)
         self.file.column("#1", anchor="c", stretch=tk.YES)
         self.file.column('#2', anchor="c", stretch=tk.YES)
+        self.file.bind('<Double-1>', self.open_file)
+        self.menu = tk.Menu(self.file,tearoff=0)
+        self.menu.add_command(label="delete",command=self.delete_file)
+        self.file.bind('<Button-3>', self.show_menu)
         self.notebook.add(self.log, text="Output")
         self.notebook.add(self.file, text="File")
         self.notebook.pack(fill='both', expand=YES)
         noteBookFrame.pack(fill='both', expand=YES)
+
+    def show_menu(self, event):
+        self.menu.tk_popup(event.x_root, event.y_root)
 
     def choose_image(self, event):
         index = int(self.image_v.get())
@@ -588,6 +595,16 @@ class Application(tk.Tk):
 
     def push_enter(self, event):
         self.thread()
+
+
+    def delete_file(self):
+        item = self.file.selection()[0]
+        print self.file.item(item, 'text')
+        if 'linux' in str(sys.platform):
+            subprocess.call(('xdg-open', '../data/' + self.file.item(item, 'text')))
+        elif 'win32' in str(sys.platform):
+            os.remove('..\\data\\' + self.file.item(item, 'text'))
+            self.file.delete(item)
 
     def open_file(self, event):
         item = self.file.selection()[0]
