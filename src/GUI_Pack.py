@@ -598,13 +598,16 @@ class Application(tk.Tk):
 
 
     def delete_file(self):
-        item = self.file.selection()[0]
-        print self.file.item(item, 'text')
-        if 'linux' in str(sys.platform):
-            subprocess.call(('xdg-open', '../data/' + self.file.item(item, 'text')))
-        elif 'win32' in str(sys.platform):
-            os.remove('..\\data\\' + self.file.item(item, 'text'))
-            self.file.delete(item)
+        try:
+            item = self.file.selection()[0]
+            print self.file.item(item, 'text')
+            if 'linux' in str(sys.platform):
+                subprocess.call(('xdg-open', '../data/' + self.file.item(item, 'text')))
+            elif 'win32' in str(sys.platform):
+                os.remove('..\\data\\' + self.file.item(item, 'text'))
+                self.file.delete(item)
+        except:
+            showerror("Error", "Error, please choose a item first")
 
     def open_file(self, event):
         item = self.file.selection()[0]
