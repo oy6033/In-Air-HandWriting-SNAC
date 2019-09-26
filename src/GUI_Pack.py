@@ -18,8 +18,11 @@ import os, sys, inspect, subprocess
 
 if not os.path.exists('../data'):
     os.makedirs('../data')
+if not os.path.exists('../video'):
+    os.makedirs('../video')
 import threading
 import ctypes
+import cv2
 
 # Leap Instantiation
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
@@ -473,6 +476,13 @@ class Application(tk.Tk):
         w.bind("<Return>", self.choose_image)
         comboboxFrame.pack(fill='both', expand=YES)
 
+
+        cameraFrame = tk.Frame(master=imageFrame)
+        ttk.Button(master=cameraFrame, text='Open Camera', command=self.camera_thread).pack(fill=X, side=LEFT, expand=YES)
+        cameraFrame.pack(fill='both', expand=YES)
+
+
+
         nextButtonFrame = tk.Frame(master=imageFrame)
         ttk.Button(master=nextButtonFrame, text='Prev', command=self.prev_image).pack(fill=X, side=LEFT, expand=YES)
         ttk.Button(master=nextButtonFrame, text='Next', command=self.next_image).pack(fill=X, side=LEFT, expand=YES)
@@ -533,6 +543,7 @@ class Application(tk.Tk):
         noteBookFrame = tk.Frame(master=inputFrame)
         self.notebook = ttk.Notebook(master=noteBookFrame)
         self.log = tk.Text(master=self.notebook)
+        # TreeView
         self.file = ttk.Treeview(master=self.notebook, columns=("A", "B"))
         self.file.heading("#0", text='Item')
         self.file.heading("#1", text='Max Times')
@@ -541,6 +552,7 @@ class Application(tk.Tk):
         self.file.column("#1", anchor="c", stretch=tk.YES)
         self.file.column('#2', anchor="c", stretch=tk.YES)
         self.file.bind('<Double-1>', self.open_file)
+        # Menu
         self.menu = tk.Menu(self.file,tearoff=0)
         self.menu.add_command(label="open", command=self.open_file_menu)
         self.menu.add_separator()
@@ -602,11 +614,18 @@ class Application(tk.Tk):
     def delete_file(self):
         try:
             item = self.file.selection()[0]
-            print self.file.item(item, 'text')
+            fn = self.file.item(item, 'text')
+            print fn
             if 'linux' in str(sys.platform):
-                os.remove('../data/' + self.file.item(item, 'text'))
+                if fn[-4:] == '.txt':
+                    os.remove('../data/' + fn)
+                else:
+                    os.remove('../video/' + fn)
             elif 'win32' in str(sys.platform):
-                os.remove('..\\data\\' + self.file.item(item, 'text'))
+                if fn[-4:] == '.txt':
+                    os.remove('..\\data\\' + fn)
+                else:
+                    os.remove('..\\video\\' + fn)
             self.file.delete(item)
         except:
             showerror("Error", "Error, please choose a item first")
@@ -614,21 +633,38 @@ class Application(tk.Tk):
     def open_file_menu(self):
         try:
             item = self.file.selection()[0]
-            print self.file.item(item, 'text')
+            fn = self.file.item(item, 'text')
+            print fn
             if 'linux' in str(sys.platform):
-                subprocess.call(('xdg-open', '../data/' + self.file.item(item, 'text')))
+                if fn[-4:] == '.txt':
+                    subprocess.call(('xdg-open', '../data/' + fn))
+                else:
+                    subprocess.call(('xdg-open', '../video/' + fn))
             elif 'win32' in str(sys.platform):
-                os.startfile('..\\data\\' + self.file.item(item, 'text'))
+                if fn[-4:] == '.txt':
+                    os.startfile('..\\data\\' + fn)
+                else:
+                    os.startfile('..\\video\\' + fn)
         except:
             showerror("Error", "Error, please choose a item first")
 
     def open_file(self, event):
-        item = self.file.selection()[0]
-        print self.file.item(item, 'text')
-        if 'linux' in str(sys.platform):
-            subprocess.call(('xdg-open', '../data/' + self.file.item(item, 'text')))
-        elif 'win32' in str(sys.platform):
-            os.startfile('..\\data\\' + self.file.item(item, 'text'))
+        try:
+            item = self.file.selection()[0]
+            fn = self.file.item(item, 'text')
+            print fn[-4:]
+            if 'linux' in str(sys.platform):
+                if fn[-4:] == '.txt':
+                    subprocess.call(('xdg-open', '../data/' + fn))
+                else:
+                    subprocess.call(('xdg-open', '../video/' + fn))
+            elif 'win32' in str(sys.platform):
+                if fn[-4:] =='.txt':
+                    os.startfile('..\\data\\' + fn)
+                else:
+                    os.startfile('..\\video\\' + fn)
+        except:
+            showerror("Error", "Error, please choose a item first")
 
     def updateOption(self):
         self.maxtimes = self.v.get()
@@ -643,6 +679,11 @@ class Application(tk.Tk):
             self.message('killthread', message, 0, len(message), 'blue', FALSE, True)
         except:
             print "no thread"
+        t2 = threading.Thread(target=self.open_camera)
+        t2.setDaemon(True)
+        t2.start()
+
+
 
     def isRunning(self):
         try:
@@ -655,6 +696,46 @@ class Application(tk.Tk):
         except:
             print "no thread"
         return FALSE
+
+    def camera_thread(self):
+        t = threading.Thread(target=self.open_camera, args=(self.account.get(), self.password.get()))
+        t.setDaemon(True)
+        t.start()
+
+    def open_camera(self,account, password):
+        fn = account + "_" + password +".avi"
+        cap = cv2.VideoCapture(0)
+        # Define the codec and create VideoWriter object
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter("../video/"+fn, fourcc, 20.0, (640, 480))
+
+        while (cap.isOpened()):
+            ret, frame = cap.read()
+            if ret == True:
+                frame = cv2.flip(frame, 90)
+
+                # write the flipped frame
+                out.write(frame)
+
+                cv2.imshow('In-Air hand Writing Recorder', frame)
+                if cv2.waitKey(1) & 0xFF == 27:
+                    break
+            else:
+                break
+        # Release everything if job is finished
+        cap.release()
+        out.release()
+        cv2.destroyAllWindows()
+
+        if(self.file.exists(fn)):
+            self.file.delete(fn)
+            self.file.insert('', 0, text=fn, iid=fn,values=(str(self.maxtimes), str(datetime.datetime.now())))
+        else:
+            self.file.insert('', 0, text=fn, iid=fn, values=(str(self.maxtimes), str(datetime.datetime.now())))
+
+        message = fn + " has been saved successfully\n"
+        self.message('videosave', message, 0, len(message), 'purple', False, True)
+
 
     def answer(self):
         showerror("Error", "Error, Application is running")
