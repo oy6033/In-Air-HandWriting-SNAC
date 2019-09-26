@@ -430,6 +430,7 @@ class Application(tk.Tk):
         self.maxtimes = 5
         self.wm_title("In-Air Hand Writing")
         self.createWidgets()
+        self.camera_open_times = 0
 
     def createWidgets(self):
         mianFram = Frame(master=self)
@@ -698,25 +699,17 @@ class Application(tk.Tk):
         return FALSE
 
     def camera_thread(self):
-        t = threading.Thread(target=self.open_camera, args=(self.account.get(), self.password.get()))
-        t.setDaemon(True)
-        t.start()
-
-    def open_camera(self,account, password):
-        fn = account + "_" + password +".avi"
+        fn = self.account.get() + "_" + self.password.get() +".avi"
         cap = cv2.VideoCapture(0)
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         out = cv2.VideoWriter("../video/"+fn, fourcc, 20.0, (640, 480))
-
         while (cap.isOpened()):
             ret, frame = cap.read()
             if ret == True:
                 frame = cv2.flip(frame, 90)
-
                 # write the flipped frame
                 out.write(frame)
-
                 cv2.imshow('In-Air hand Writing Recorder', frame)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
@@ -726,6 +719,7 @@ class Application(tk.Tk):
         cap.release()
         out.release()
         cv2.destroyAllWindows()
+        self.camera_open_times = self.camera_open_times + 1
 
         if(self.file.exists(fn)):
             self.file.delete(fn)
@@ -735,6 +729,8 @@ class Application(tk.Tk):
 
         message = fn + " has been saved successfully\n"
         self.message('videosave', message, 0, len(message), 'purple', False, True)
+
+
 
 
     def answer(self):
