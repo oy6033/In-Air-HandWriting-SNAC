@@ -702,8 +702,12 @@ class Application(tk.Tk):
         fn = self.account.get() + "_" + self.password.get() +".avi"
         cap = cv2.VideoCapture(0)
         # Define the codec and create VideoWriter object
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 0.5)
+        size = (width, height)
+        # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter("../video/"+fn, fourcc, 20.0, (640, 480))
+        out = cv2.VideoWriter("../video/"+fn, fourcc, 20.0, size)
         while (cap.isOpened()):
             ret, frame = cap.read()
             if ret == True:
