@@ -43,6 +43,7 @@ class Camera(threading.Thread):
         threading.Thread.__init__(self)
         self.fn = fn
         self.maxtimes = maxtimes
+        self.stop = 0
 
     def run(self):
         cap = cv2.VideoCapture(0)
@@ -63,9 +64,9 @@ class Camera(threading.Thread):
                 cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
                 img = PIL.Image.fromarray(cv2image)
                 imgtk = ImageTk.PhotoImage(image=img)
-                app.label= imgtk
-                app.configure(image=imgtk)
-                if cv2.waitKey(1) & 0xFF == 27:
+                app.label.imgtk = imgtk
+                app.label.configure(image=imgtk)
+                if self.stop == 1:
                     break
             else:
                 break
@@ -480,6 +481,8 @@ class Application(tk.Tk):
     def createWidgets(self):
         mianFram = Frame(master=self)
         mianFram.pack(fill='both', expand=YES)
+        mianFram.bind_all('<Escape>', self.stop_camera)
+
         self.fig = plt.figure(figsize=(5, 6))
         self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
 
@@ -496,8 +499,8 @@ class Application(tk.Tk):
 
         inputFrame = tk.Frame(master=mianFram)
         inputFrame.pack(fill='both', side=LEFT, expand=YES)
-
         imageFrame = tk.Frame(master=inputFrame)
+
         self.canvasImage = Canvas(master=imageFrame, width=40)
         self.canvasImage.pack(fill='both', side=LEFT, expand=YES)
         self.my_images = []
@@ -604,16 +607,12 @@ class Application(tk.Tk):
         self.file.bind('<Button-3>', self.show_menu)
 
         # Canvas
-        self.label= tk.Label(master=noteBookFrame)
+        self.label = ttk.Label(master=self.notebook)
 
         self.notebook.add(self.log, text="Output")
         self.notebook.add(self.file, text="File")
         self.notebook.add(self.label, text="Camera")
         self.notebook.pack(fill='both', expand=YES)
-
-
-
-
         noteBookFrame.pack(fill='both', expand=YES)
 
     def show_menu(self, event):
@@ -745,10 +744,12 @@ class Application(tk.Tk):
         return FALSE
 
     def camera_thread(self):
-        self.fn = self.account.get() + "_" + self.password.get() + ".avi"
-        t3 = Camera(fn=self.fn, maxtimes=self.maxtimes)
-        t3.setDaemon(True)
-        t3.start()
+        fn = self.account.get() + "_" + self.password.get() + ".avi"
+        self.notebook.select(2)
+        self.t3 = Camera(fn=fn, maxtimes=self.maxtimes)
+        self.t3.setDaemon(True)
+        self.t3.start()
+
 
     def answer(self):
         showerror("Error", "Error, Application is running")
@@ -768,6 +769,15 @@ class Application(tk.Tk):
         if (self.initialTimes == self.maxtimes):
             self.initialTimes = 0
         self.variable.set(self.OPTIONS[self.initialTimes])
+
+    def stop_camera(self , event):
+        try:
+            self.t3.stop = 1
+            self.notebook.select(0)
+        except:
+            print "camera is not running"
+
+
 
 
 def _quit():
