@@ -38,6 +38,52 @@ sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
 
 
+class Camera(threading.Thread):
+    def __init__(self, fn, maxtimes):
+        threading.Thread.__init__(self)
+        self.fn = fn
+        self.maxtimes = maxtimes
+
+    def run(self):
+        cap = cv2.VideoCapture(0)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 0.5)
+        size = (width, height)
+        # Define the codec and create VideoWriter object
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter("../video/" + self.fn, fourcc, 20.0, size)
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if ret == True:
+                frame = cv2.flip(frame, 90)
+                # write the flipped frame
+                out.write(frame)
+                # cv2.imshow('In-Air hand Writing Recorder', frame)
+                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+                img = PIL.Image.fromarray(cv2image)
+                imgtk = ImageTk.PhotoImage(image=img)
+                app.label= imgtk
+                app.configure(image=imgtk)
+                if cv2.waitKey(1) & 0xFF == 27:
+                    break
+            else:
+                break
+        # Release everything if job is finished
+        cap.release()
+        out.release()
+        cv2.destroyAllWindows()
+
+        if (app.file.exists(self.fn)):
+            app.file.delete(self.fn)
+            app.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(self.maxtimes), str(datetime.datetime.now())))
+        else:
+            app.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(self.maxtimes), str(datetime.datetime.now())))
+
+        message = self.fn + " has been saved successfully\n"
+        app.message('videosave', message, 0, len(message), 'purple', False, True)
+
+
 class LeapRun(threading.Thread):
 
     def __init__(self, account, password, suffix, times, ax1, ax2, canvas_draw, fig, log):
@@ -415,9 +461,9 @@ class LeapRun(threading.Thread):
         message = fn + " has been saved successfully\n"
         self.message('filesave', message, 0, len(message), 'purple', False, True)
 
-        if(app.file.exists(fn)):
+        if (app.file.exists(fn)):
             app.file.delete(fn)
-            app.file.insert('', 0, text=fn, iid=fn,values=(str(app.maxtimes), str(datetime.datetime.now())))
+            app.file.insert('', 0, text=fn, iid=fn, values=(str(app.maxtimes), str(datetime.datetime.now())))
         else:
             app.file.insert('', 0, text=fn, iid=fn, values=(str(app.maxtimes), str(datetime.datetime.now())))
 
@@ -430,7 +476,6 @@ class Application(tk.Tk):
         self.maxtimes = 5
         self.wm_title("In-Air Hand Writing")
         self.createWidgets()
-        self.camera_open_times = 0
 
     def createWidgets(self):
         mianFram = Frame(master=self)
@@ -477,12 +522,10 @@ class Application(tk.Tk):
         w.bind("<Return>", self.choose_image)
         comboboxFrame.pack(fill='both', expand=YES)
 
-
         cameraFrame = tk.Frame(master=imageFrame)
-        ttk.Button(master=cameraFrame, text='Open Camera', command=self.camera_thread).pack(fill=X, side=LEFT, expand=YES)
+        ttk.Button(master=cameraFrame, text='Open Camera', command=self.camera_thread).pack(fill=X, side=LEFT,
+                                                                                            expand=YES)
         cameraFrame.pack(fill='both', expand=YES)
-
-
 
         nextButtonFrame = tk.Frame(master=imageFrame)
         ttk.Button(master=nextButtonFrame, text='Prev', command=self.prev_image).pack(fill=X, side=LEFT, expand=YES)
@@ -554,14 +597,23 @@ class Application(tk.Tk):
         self.file.column('#2', anchor="c", stretch=tk.YES)
         self.file.bind('<Double-1>', self.open_file)
         # Menu
-        self.menu = tk.Menu(self.file,tearoff=0)
+        self.menu = tk.Menu(self.file, tearoff=0)
         self.menu.add_command(label="open", command=self.open_file_menu)
         self.menu.add_separator()
-        self.menu.add_command(label="delete",command=self.delete_file)
+        self.menu.add_command(label="delete", command=self.delete_file)
         self.file.bind('<Button-3>', self.show_menu)
+
+        # Canvas
+        self.label= tk.Label(master=noteBookFrame)
+
         self.notebook.add(self.log, text="Output")
         self.notebook.add(self.file, text="File")
+        self.notebook.add(self.label, text="Camera")
         self.notebook.pack(fill='both', expand=YES)
+
+
+
+
         noteBookFrame.pack(fill='both', expand=YES)
 
     def show_menu(self, event):
@@ -578,7 +630,7 @@ class Application(tk.Tk):
             self.message('outofrange', message, 0, len(message), 'red', False, True)
 
     def select_all(self, event):
-        event.widget.select_range(0,'end')
+        event.widget.select_range(0, 'end')
         event.widget.icursor('end')
 
     def message(self, message_name, message, start, end, color, underline, is_open):
@@ -610,7 +662,6 @@ class Application(tk.Tk):
 
     def push_enter(self, event):
         self.thread()
-
 
     def delete_file(self):
         try:
@@ -660,7 +711,7 @@ class Application(tk.Tk):
                 else:
                     subprocess.call(('xdg-open', '../video/' + fn))
             elif 'win32' in str(sys.platform):
-                if fn[-4:] =='.txt':
+                if fn[-4:] == '.txt':
                     os.startfile('..\\data\\' + fn)
                 else:
                     os.startfile('..\\video\\' + fn)
@@ -680,11 +731,6 @@ class Application(tk.Tk):
             self.message('killthread', message, 0, len(message), 'blue', FALSE, True)
         except:
             print "no thread"
-        t2 = threading.Thread(target=self.open_camera)
-        t2.setDaemon(True)
-        t2.start()
-
-
 
     def isRunning(self):
         try:
@@ -699,43 +745,10 @@ class Application(tk.Tk):
         return FALSE
 
     def camera_thread(self):
-        fn = self.account.get() + "_" + self.password.get() +".avi"
-        cap = cv2.VideoCapture(0)
-        # Define the codec and create VideoWriter object
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 0.5)
-        size = (width, height)
-        # Define the codec and create VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter("../video/"+fn, fourcc, 20.0, size)
-        while (cap.isOpened()):
-            ret, frame = cap.read()
-            if ret == True:
-                frame = cv2.flip(frame, 90)
-                # write the flipped frame
-                out.write(frame)
-                cv2.imshow('In-Air hand Writing Recorder', frame)
-                if cv2.waitKey(1) & 0xFF == 27:
-                    break
-            else:
-                break
-        # Release everything if job is finished
-        cap.release()
-        out.release()
-        cv2.destroyAllWindows()
-        self.camera_open_times = self.camera_open_times + 1
-
-        if(self.file.exists(fn)):
-            self.file.delete(fn)
-            self.file.insert('', 0, text=fn, iid=fn,values=(str(self.maxtimes), str(datetime.datetime.now())))
-        else:
-            self.file.insert('', 0, text=fn, iid=fn, values=(str(self.maxtimes), str(datetime.datetime.now())))
-
-        message = fn + " has been saved successfully\n"
-        self.message('videosave', message, 0, len(message), 'purple', False, True)
-
-
-
+        self.fn = self.account.get() + "_" + self.password.get() + ".avi"
+        t3 = Camera(fn=self.fn, maxtimes=self.maxtimes)
+        t3.setDaemon(True)
+        t3.start()
 
     def answer(self):
         showerror("Error", "Error, Application is running")
