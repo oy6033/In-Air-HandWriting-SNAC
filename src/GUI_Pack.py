@@ -74,12 +74,12 @@ class Camera(threading.Thread):
         cap.release()
         out.release()
         cv2.destroyAllWindows()
-
+        time = str(datetime.datetime.now())[:-7]
         if (app.file.exists(self.fn)):
             app.file.delete(self.fn)
-            app.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(self.maxtimes), str(datetime.datetime.now())))
+            app.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(self.maxtimes), time))
         else:
-            app.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(self.maxtimes), str(datetime.datetime.now())))
+            app.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(self.maxtimes), time))
 
         message = self.fn + " has been saved successfully\n"
         app.message('videosave', message, 0, len(message), 'purple', False, True)
