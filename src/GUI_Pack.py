@@ -47,12 +47,10 @@ class Camera(threading.Thread):
 
     def run(self):
         cap = cv2.VideoCapture(0)
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 0.5)
-        size = (width, height)
+
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter("../video/" + self.fn, fourcc, 20.0, size)
+        out = cv2.VideoWriter("../video/" + self.fn, fourcc, 20.0, (640, 480))
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -64,8 +62,8 @@ class Camera(threading.Thread):
                 cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
                 img = PIL.Image.fromarray(cv2image)
                 imgtk = ImageTk.PhotoImage(image=img)
-                app.label.imgtk = imgtk
-                app.label.configure(image=imgtk)
+                app.l.imgtk = imgtk
+                app.l.configure(image=imgtk)
                 if self.stop == 1:
                     break
             else:
@@ -74,6 +72,7 @@ class Camera(threading.Thread):
         cap.release()
         out.release()
         cv2.destroyAllWindows()
+        app.t.destroy()
         time = str(datetime.datetime.now())[:-7]
         if (app.file.exists(self.fn)):
             app.file.delete(self.fn)
@@ -482,6 +481,7 @@ class Application(tk.Tk):
         mianFram = Frame(master=self)
         mianFram.pack(fill='both', expand=YES)
         mianFram.bind_all('<Escape>', self.stop_camera)
+        mianFram.bind_all('<Return>', self.push_enter)
 
         self.fig = plt.figure(figsize=(5, 6))
         self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
@@ -539,7 +539,6 @@ class Application(tk.Tk):
         accountFrame = tk.Frame(master=inputFrame)
         ttk.Label(master=accountFrame, text="Please input your account:", width=40).pack(fill=X, side=LEFT)
         self.account = ttk.Entry(master=accountFrame, width=40)
-        self.account.bind('<Return>', self.push_enter)
         self.account.bind('<Control-KeyRelease-a>', self.select_all)
         self.account.pack(fill=X, side=RIGHT)
         accountFrame.pack(fill='both', expand=YES)
@@ -547,7 +546,6 @@ class Application(tk.Tk):
         writingFrame = tk.Frame(master=inputFrame)
         ttk.Label(master=writingFrame, text="Please input your writing word:", width=40).pack(fill=X, side=LEFT)
         self.password = ttk.Entry(master=writingFrame, width=40)
-        self.password.bind('<Return>', self.push_enter)
         self.password.bind('<Control-KeyRelease-a>', self.select_all)
         self.password.pack(fill=X, side=RIGHT)
         writingFrame.pack(fill='both', expand=YES)
@@ -555,7 +553,6 @@ class Application(tk.Tk):
         suffixFrame = tk.Frame(master=inputFrame)
         ttk.Label(master=suffixFrame, text="Please input suffix if needed:", width=40).pack(fill=X, side=LEFT)
         self.suffix = ttk.Entry(master=suffixFrame, width=40)
-        self.suffix.bind('<Return>', self.push_enter)
         self.suffix.bind('<Control-KeyRelease-a>', self.select_all)
         self.suffix.pack(fill=X, side=RIGHT)
         suffixFrame.pack(fill='both', expand=YES)
@@ -607,11 +604,11 @@ class Application(tk.Tk):
         self.file.bind('<Button-3>', self.show_menu)
 
         # Canvas
-        self.label = ttk.Label(master=self.notebook)
+        #self.label = ttk.Label(master=self.notebook)
 
         self.notebook.add(self.log, text="Output")
         self.notebook.add(self.file, text="File")
-        self.notebook.add(self.label, text="Camera")
+        # self.notebook.add(self.label, text="Camera")
         self.notebook.pack(fill='both', expand=YES)
         noteBookFrame.pack(fill='both', expand=YES)
 
@@ -744,8 +741,11 @@ class Application(tk.Tk):
         return FALSE
 
     def camera_thread(self):
+        self.t = tk.Toplevel(self)
+        self.t.wm_title("Camera")
+        self.l = tk.Label(self.t)
+        self.l.pack(side="top", fill="both", expand=True)
         fn = self.account.get() + "_" + self.password.get() + ".avi"
-        self.notebook.select(2)
         self.t3 = Camera(fn=fn, maxtimes=self.maxtimes)
         self.t3.setDaemon(True)
         self.t3.start()
@@ -773,9 +773,9 @@ class Application(tk.Tk):
     def stop_camera(self , event):
         try:
             self.t3.stop = 1
-            self.notebook.select(0)
         except:
             print "camera is not running"
+
 
 
 
