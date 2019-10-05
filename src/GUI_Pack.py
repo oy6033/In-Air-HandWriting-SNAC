@@ -397,7 +397,8 @@ class LeapRun(threading.Thread):
             pass
         else:
             self.message('showrange', print_range, print_range.find("out"), len(print_range), 'blue', False, True)
-            app.writingTimes()
+            if(self.threadSign == 1):
+                app.writingTimes()
         print("# of frames: %d, last ts: %d, out of range: %d" % (l, tss[l - 1], out_of_range))
 
         fd = open('../data/' + fn, 'w')
