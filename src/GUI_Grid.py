@@ -6,9 +6,9 @@ from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-import Tkinter as tk
-from Tkinter import *
-from tkMessageBox import *
+import tkinter as tk
+from tkinter import *
+from tkinter import messagebox
 import os, sys, inspect
 if not os.path.exists('../data'):
     os.makedirs('../data')
@@ -133,15 +133,15 @@ class LeapRun(threading.Thread):
             if self.threadSign == 0:
                 break
         if t.isAlive():
-            print self.log.insert('1.0', "Error, thread is not killed, please check\n")
+            print (self.log.insert('1.0', "Error, thread is not killed, please check\n"))
         else:
-            print self.log.insert('1.0', "Plot is completed, threads has been killed\n")
+            print (self.log.insert('1.0', "Plot is completed, threads has been killed\n"))
 
     def run(self):
-        print self.account
-        print self.password
-        print self.times
-        print self.suffix
+        print (self.account)
+        print (self.password)
+        print (self.times)
+        print (self.suffix)
 
         t2 = threading.Thread(target=self.realTimePlot)
         t2.setDaemon(True)
@@ -472,16 +472,16 @@ class Application(tk.Tk):
             if self.t1.isAlive():
                 self.answer()
                 self.kill_all()
-                return TRUE
+                return True
             else:
-                return FALSE
+                return False
         except:
-            print "no thread"
+            print ("no thread")
 
-        return FALSE
+        return False
 
     def answer(self):
-        showerror("Error", "Error, Application is running")
+        messagebox.showerror("Error", "Error, Application is running")
 
     def thread(self):
         if not self.isRunning():
@@ -501,7 +501,7 @@ class Application(tk.Tk):
 
 
 def _quit():
-    print "application is closed"
+    print ("application is closed")
     app.quit()
     app.destroy()
 

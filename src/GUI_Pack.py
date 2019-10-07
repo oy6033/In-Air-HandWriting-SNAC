@@ -10,10 +10,10 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from PIL import ImageTk
 import PIL.Image
-import Tkinter as tk
-from Tkinter import *
-import ttk
-from tkMessageBox import *
+import tkinter as tk
+from tkinter import *
+from tkinter import ttk
+from tkinter import messagebox
 import os, sys, inspect, subprocess
 
 if not os.path.exists('../data'):
@@ -72,7 +72,7 @@ class Camera(threading.Thread):
         cap.release()
         out.release()
         cv2.destroyAllWindows()
-        app.t.destroy()
+        app.t.quit()
         time = str(datetime.datetime.now())[:-7]
         if (app.file.exists(self.fn)):
             app.file.delete(self.fn)
@@ -201,16 +201,16 @@ class LeapRun(threading.Thread):
         self.plot2()
 
         if t.isAlive():
-            print self.log.insert('1.0', "Error, thread is not killed, please check\n")
+            print (self.log.insert('1.0', "Error, thread is not killed, please check\n"))
         else:
             message = 'Plot is completed, threads has been killed\n'
             self.message('plotcompleted', message, 0, len(message), 'orange', FALSE, FALSE)
 
     def run(self):
-        print self.account
-        print self.password
-        print self.times
-        print self.suffix
+        print (self.account)
+        print (self.password)
+        print (self.times)
+        print (self.suffix)
 
         # N = 2000
         # if len(sys.argv) < 2:
@@ -564,7 +564,7 @@ class Application(tk.Tk):
         self.variable = StringVar(master=dropListFrame)
         self.variable.set(self.OPTIONS[self.initialTimes])
         ttk.Label(master=dropListFrame, text="Writing Times:", width=40).pack(fill=X, side=LEFT)
-        dropList = apply(tk.OptionMenu, (dropListFrame, self.variable) + tuple(self.OPTIONS))
+        dropList = OptionMenu(dropListFrame, self.variable, *self.OPTIONS)
         dropList.pack(fill=X, side=RIGHT)
         MODES = [
             ("5 times", 5),
@@ -664,7 +664,7 @@ class Application(tk.Tk):
         try:
             item = self.file.selection()[0]
             fn = self.file.item(item, 'text')
-            print fn
+            print (fn)
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
                     os.remove('../data/' + fn)
@@ -677,13 +677,13 @@ class Application(tk.Tk):
                     os.remove('..\\video\\' + fn)
             self.file.delete(item)
         except:
-            showerror("Error", "Error, please choose a item first")
+            messagebox.showerror("Error", "Error, please choose a item first")
 
     def open_file_menu(self):
         try:
             item = self.file.selection()[0]
             fn = self.file.item(item, 'text')
-            print fn
+            print (fn)
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
                     subprocess.call(('xdg-open', '../data/' + fn))
@@ -695,13 +695,13 @@ class Application(tk.Tk):
                 else:
                     os.startfile('..\\video\\' + fn)
         except:
-            showerror("Error", "Error, please choose a item first")
+            messagebox.showerror("Error", "Error, please choose a item first")
 
     def open_file(self, event):
         try:
             item = self.file.selection()[0]
             fn = self.file.item(item, 'text')
-            print fn[-4:]
+            print (fn[-4:])
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
                     subprocess.call(('xdg-open', '../data/' + fn))
@@ -713,7 +713,7 @@ class Application(tk.Tk):
                 else:
                     os.startfile('..\\video\\' + fn)
         except:
-            showerror("Error", "Error, please choose a item first")
+            messagebox.showerror("Error", "Error, please choose a item first")
 
     def updateOption(self):
         self.maxtimes = self.v.get()
@@ -727,7 +727,7 @@ class Application(tk.Tk):
             message = 'Threads has been Killed\n'
             self.message('killthread', message, 0, len(message), 'blue', FALSE, True)
         except:
-            print "no thread"
+            print ("no thread")
 
     def isRunning(self):
         try:
@@ -738,7 +738,7 @@ class Application(tk.Tk):
             else:
                 return FALSE
         except:
-            print "no thread"
+            print ("no thread")
         return FALSE
 
     def camera_thread(self):
@@ -753,7 +753,7 @@ class Application(tk.Tk):
 
 
     def answer(self):
-        showerror("Error", "Error, Application is running")
+        messagebox.showerror("Error", "Error, Application is running")
 
     def thread(self):
         if not self.isRunning():
@@ -775,14 +775,14 @@ class Application(tk.Tk):
         try:
             self.t3.stop = 1
         except:
-            print "camera is not running"
+            print ("camera is not running")
 
 
 
 
 
 def _quit():
-    print "application is closed"
+    print ("application is closed")
     app.quit()
     app.destroy()
     sys.exit()
