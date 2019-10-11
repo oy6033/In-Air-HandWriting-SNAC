@@ -3,7 +3,6 @@ import cv2
 from PIL import ImageTk
 import PIL.Image
 import datetime
-import GUI_Main
 class Camera(threading.Thread):
     def __init__(self, fn, maxtimes, l, t, file, message):
         threading.Thread.__init__(self)
@@ -34,7 +33,7 @@ class Camera(threading.Thread):
                 imgtk = ImageTk.PhotoImage(image=img)
                 self.l.imgtk = imgtk
                 self.l.configure(image=imgtk)
-                if self.stop == 1:
+                if cv2.waitKey(1) & 0xFF == 27 or self.stop == 1:
                     break
             else:
                 break

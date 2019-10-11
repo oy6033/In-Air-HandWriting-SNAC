@@ -18,6 +18,7 @@ if not os.path.exists('../video'):
     os.makedirs('../video')
 import LeapMotion
 import Camera
+import GUI_Login
 
 
 
@@ -25,34 +26,48 @@ import Camera
 
 class Application(object):
 
-    def __init__(self, master =None):
+    def __init__(self, master=None, id=None):
         self.master = master
         self.maxtimes = 5
-        self.master.geometry("1180x800")
+        self.id = id
         self.master.title("In-Air Hand Writing")
-        self.l = None
         self.createWidgets()
+        self.master.protocol("WM_DELETE_WINDOW", self.back_menu)
 
-    def createWidgets(self):
+    def createWidgets(self, w=1180, h=800):
+        ws = self.master.winfo_screenwidth()
+        hs = self.master.winfo_screenheight()
+        x = (ws / 2) - (w / 2)
+        y = (hs / 2) - (h / 2)
+        self.master.geometry('%dx%d+%d+%d' % (w, h, x, y))
         mianFram = Frame(master=self.master)
         mianFram.pack(fill='both', expand=YES)
         mianFram.bind_all('<Escape>', self.stop_camera)
         mianFram.bind_all('<Return>', self.push_enter)
 
-        self.fig = plt.figure(figsize=(5, 6))
-        self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
+        # Graph Right
+        if self.id == '1':
+            self.fig = plt.figure(figsize=(5, 6))
+            self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
 
-        self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
+            self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
 
-        self.canvas = FigureCanvasTkAgg(self.fig, master=mianFram)
-        toolbarFrame = tk.Frame(master=mianFram)
-        toolbarFrame.pack(fill='both', side=BOTTOM)
-        self.canvas._tkcanvas.pack(fill='both', side=LEFT)
-        self.ax1.mouse_init()
-        self.ax2.mouse_init()
-        toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
-        toolbar.update()
+            self.canvas = FigureCanvasTkAgg(self.fig, master=mianFram)
+            toolbarFrame = tk.Frame(master=mianFram)
+            toolbarFrame.pack(fill='both', side=BOTTOM)
+            self.canvas._tkcanvas.pack(fill='both', side=LEFT)
+            self.ax1.mouse_init()
+            self.ax2.mouse_init()
+            toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
+            toolbar.update()
+        elif self.id == '2':
+            self.fig = plt.figure(figsize=(6, 4))
+            self.canvas = FigureCanvasTkAgg(self.fig, master=mianFram)
+            toolbarFrame = tk.Frame(master=mianFram)
+            toolbarFrame.pack(fill='both', side=BOTTOM)
+            self.canvas._tkcanvas.pack(fill='both', side=LEFT)
 
+        # input Frame Left
         inputFrame = tk.Frame(master=mianFram)
         inputFrame.pack(fill='both', side=LEFT, expand=YES)
         imageFrame = tk.Frame(master=inputFrame)
@@ -89,6 +104,11 @@ class Application(object):
 
         cameraFrame = tk.Frame(master=imageFrame)
         ttk.Button(master=cameraFrame, text='Open Camera', command=self.camera_thread).pack(fill=X, side=LEFT,
+                                                                                            expand=YES)
+        cameraFrame.pack(fill='both', expand=YES)
+
+        cameraFrame = tk.Frame(master=imageFrame)
+        ttk.Button(master=cameraFrame, text='Back to Menu', command=self.back_menu).pack(fill=X, side=LEFT,
                                                                                             expand=YES)
         cameraFrame.pack(fill='both', expand=YES)
 
@@ -279,6 +299,12 @@ class Application(object):
         except:
             print ("no thread")
 
+    def back_menu(self):
+        self.master.quit()
+        self.master.destroy()
+        new_root = Tk()
+        GUI_Login.Application(new_root)
+
     def isRunning(self):
         try:
             if self.t1.isAlive():
@@ -291,8 +317,15 @@ class Application(object):
             print ("no thread")
         return FALSE
 
-    def camera_thread(self):
+    def camera_thread(self, w= 640, h= 480):
         self.t = tk.Toplevel(master=self.master)
+        # get screen width and height
+        ws = self.t.winfo_screenwidth()
+        hs = self.t.winfo_screenheight()
+        # calculate position x, y
+        x = (ws / 2) - (w / 2)
+        y = (hs / 2) - (h / 2)
+        self.t.geometry('%dx%d+%d+%d' % (w, h, x, y))
         self.t.wm_title("Camera")
         self.l = tk.Label(self.t)
         self.l.pack(side="top", fill="both", expand=True)
@@ -333,13 +366,11 @@ class Application(object):
         except:
             print ("camera is not running")
 
-
-
-    # def _quit(self):
-    #     print ("application is closed")
-    #     app.quit()
-    #     app.destroy()
-    #     sys.exit()
+    def _quit(self):
+        print ("application is closed")
+        self.master.quit()
+        self.master.destroy()
+        sys.exit()
 
 
 # if __name__ == '__main__':
