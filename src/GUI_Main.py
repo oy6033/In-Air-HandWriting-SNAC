@@ -16,8 +16,8 @@ if not os.path.exists('../data'):
     os.makedirs('../data')
 if not os.path.exists('../video'):
     os.makedirs('../video')
-import GUI_LeapMotion
-import GUI_Camera
+import LeapMotion
+import Camera
 
 
 
@@ -297,8 +297,8 @@ class Application(object):
         self.l = tk.Label(self.t)
         self.l.pack(side="top", fill="both", expand=True)
         fn = self.account.get() + "_" + self.password.get() + ".avi"
-        self.t3 = GUI_Camera.Camera(fn=fn, maxtimes=self.maxtimes, l=self.l, t=self.t, file=self.file,
-                                    message=self.message)
+        self.t3 = Camera.Camera(fn=fn, maxtimes=self.maxtimes, l=self.l, t=self.t, file=self.file,
+                                message=self.message)
         self.t3.setDaemon(True)
         self.t3.start()
 
@@ -310,14 +310,14 @@ class Application(object):
         if not self.isRunning():
             self.log.delete("1.0", END)
             self.initialTimes = int(self.variable.get()) - 1
-            self.t1 = GUI_LeapMotion.LeapRun(account=self.account.get(), password=self.password.get(),
-                                             suffix=self.suffix.get(),
-                                             times=self.variable.get(),
-                                             ax1=self.ax1, ax2=self.ax2,
-                                             canvas_draw=self.canvas,
-                                             fig=self.fig, log=self.log,
-                                             file=self.file, writingTimes=self.writingTimes,
-                                             maxtimes=self.maxtimes)
+            self.t1 = LeapMotion.LeapRun(account=self.account.get(), password=self.password.get(),
+                                         suffix=self.suffix.get(),
+                                         times=self.variable.get(),
+                                         ax1=self.ax1, ax2=self.ax2,
+                                         canvas_draw=self.canvas,
+                                         fig=self.fig, log=self.log,
+                                         file=self.file, writingTimes=self.writingTimes,
+                                         maxtimes=self.maxtimes)
             self.t1.setDaemon(True)
             self.t1.start()
 

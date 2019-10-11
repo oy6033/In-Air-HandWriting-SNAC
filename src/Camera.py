@@ -16,7 +16,6 @@ class Camera(threading.Thread):
         self.message = message
 
 
-
     def run(self):
         cap = cv2.VideoCapture(0)
         # Define the codec and create VideoWriter object
