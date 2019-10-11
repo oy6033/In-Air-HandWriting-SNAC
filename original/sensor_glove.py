@@ -19,15 +19,15 @@ def recv_payload(payload_len, serial_dev):
 	sample = np.frombuffer(payload[4:payload_len], dtype=np.float32)
 
 	print(ts)
-	print("\t", end="")
+	print("\t")
 	for j in range(12):
 
-		print("%7.4f, " % sample[j], end="")
+		print("%7.4f, " % sample[j])
 	print()
-	print("\t", end="")
+	print("\t")
 	for j in range(12, 24):
 
-		print("%7.4f, " % sample[j], end="")
+		print("%7.4f, " % sample[j])
 	print()
 
 	return (ts, sample)
