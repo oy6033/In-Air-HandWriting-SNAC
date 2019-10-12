@@ -7,6 +7,7 @@ import threading
 import struct
 import datetime
 import os
+import serial.tools.list_ports
 
 
 
@@ -29,7 +30,8 @@ class GloveRun(threading.Thread):
         self.file = file
         self.writingTimes = writingTimes
         self.maxtimes = maxtimes
-        self.ser = serial.Serial('/dev/ttyACM0', 576000)
+        plist = list(serial.tools.list_ports.comports())
+        self.ser = serial.Serial(str(plist[0]).split(' ')[0], 9600)
         self.ax = ax
 
     def message(self, message_name, message, start, end, color, underline, is_open):
