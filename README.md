@@ -19,6 +19,15 @@ Run command to build package:\
 Run command to execute directly:\
 ``` python GUI_Pack.py```
 
+## Use
+
+Run command to give permission for file:\
+``` chmod 777 dist/GUI_Login ```
+
+Run command to give permission for CDC:\
+``` chmod 666 /dev/ttyACM0 ```
+
+
 ## Support
 Windows\
 Linux\
