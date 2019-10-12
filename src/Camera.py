@@ -33,7 +33,7 @@ class Camera(threading.Thread):
                 imgtk = ImageTk.PhotoImage(image=img)
                 self.l.imgtk = imgtk
                 self.l.configure(image=imgtk)
-                if cv2.waitKey(1) & 0xFF == 27 or self.stop == 1:
+                if self.stop == 1:
                     break
             else:
                 break
@@ -41,7 +41,7 @@ class Camera(threading.Thread):
         cap.release()
         out.release()
         cv2.destroyAllWindows()
-        self.t.quit()
+
         time = str(datetime.datetime.now())[:-7]
         if (self.file.exists(self.fn)):
             self.file.delete(self.fn)

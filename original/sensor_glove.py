@@ -4,18 +4,20 @@ import sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-
 import serial
+import struct
+import binascii
 
 
 def recv_payload(payload_len, serial_dev):
 
 	payload = ser.read(payload_len)
-
-	#print(payload)
-
-	ts = int.from_bytes(payload[0:4], byteorder='little')
-
+	# ts = int.from_bytes(payload[0:4], byteorder='little')
+	ts = struct.unpack_from('<i',payload[0:4])[0]
+	print (ts)
+	# ts = int(payload.encode('hex')[0:4], 16)
+	# print (ts)
+	# temp = float(payload.encode('hex')[4:payload_len])
 	sample = np.frombuffer(payload[4:payload_len], dtype=np.float32)
 
 	print(ts)
@@ -59,13 +61,21 @@ i = 0
 
 while True:
 
-	s = ser.read(1)
+	s = int(ser.read(1).encode('hex'), 16)
+	print (s)
+	# cast the received byte to an integer
+	c = s
+	print (c)
+	# cast the received byte to an integer
 
-	# cast the received byte to an integer	
-	c = s[0]
+
+	# s = ser.read(1)
+	#
+	# # cast the received byte to an integer
+	# c = s[0]
+
 
 	if state == 0:
-
 		if c == 65:
 			state = 1
 		else:
@@ -111,7 +121,7 @@ while True:
 
 			if stop_count > 50 or i >= 2000:
 
-				break;
+				break
 
 		state = 0
 

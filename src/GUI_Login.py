@@ -24,12 +24,12 @@ class Application(object):
         self.fm.pack(fill=BOTH, expand=YES)
 
     def leap(self):
-        self.fm.quit()
+        # self.fm.quit()
         self.fm.destroy()
         GUI_Main.Application(self.master, "1")
 
     def leap2(self):
-        self.fm.quit()
+        # self.fm.quit()
         self.fm.destroy()
         GUI_Main.Application(self.master, "2")
 

@@ -12,13 +12,16 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 import os, sys, inspect, subprocess
-if not os.path.exists('../data'):
-    os.makedirs('../data')
+if not os.path.exists('../leap_data'):
+    os.makedirs('../leap_data')
 if not os.path.exists('../video'):
     os.makedirs('../video')
+if not os.path.exists('../glove_data'):
+    os.makedirs('../glove_data')
 import LeapMotion
 import Camera
 import GUI_Login
+import Glove
 
 
 
@@ -32,6 +35,7 @@ class Application(object):
         self.id = id
         self.master.title("In-Air Hand Writing")
         self.createWidgets()
+        self.int_file_name()
         self.master.protocol("WM_DELETE_WINDOW", self.back_menu)
 
     def createWidgets(self, w=1180, h=800):
@@ -40,10 +44,10 @@ class Application(object):
         x = (ws / 2) - (w / 2)
         y = (hs / 2) - (h / 2)
         self.master.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        mianFram = Frame(master=self.master)
-        mianFram.pack(fill='both', expand=YES)
-        mianFram.bind_all('<Escape>', self.stop_camera)
-        mianFram.bind_all('<Return>', self.push_enter)
+        self.mianFram = Frame(master=self.master)
+        self.mianFram.pack(fill='both', expand=YES)
+        self.mianFram.bind_all('<Escape>', self.stop_camera)
+        self.mianFram.bind_all('<Return>', self.push_enter)
 
         # Graph Right
         if self.id == '1':
@@ -52,8 +56,8 @@ class Application(object):
 
             self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
 
-            self.canvas = FigureCanvasTkAgg(self.fig, master=mianFram)
-            toolbarFrame = tk.Frame(master=mianFram)
+            self.canvas = FigureCanvasTkAgg(self.fig, master=self.mianFram)
+            toolbarFrame = tk.Frame(master=self.mianFram)
             toolbarFrame.pack(fill='both', side=BOTTOM)
             self.canvas._tkcanvas.pack(fill='both', side=LEFT)
             self.ax1.mouse_init()
@@ -62,13 +66,17 @@ class Application(object):
             toolbar.update()
         elif self.id == '2':
             self.fig = plt.figure(figsize=(6, 4))
-            self.canvas = FigureCanvasTkAgg(self.fig, master=mianFram)
-            toolbarFrame = tk.Frame(master=mianFram)
+            for j in range(12):
+                self.ax = self.fig.add_subplot(12, 1, j + 1)
+            self.canvas = FigureCanvasTkAgg(self.fig, master=self.mianFram)
+            toolbarFrame = tk.Frame(master=self.mianFram)
             toolbarFrame.pack(fill='both', side=BOTTOM)
             self.canvas._tkcanvas.pack(fill='both', side=LEFT)
+            toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
+            toolbar.update()
 
         # input Frame Left
-        inputFrame = tk.Frame(master=mianFram)
+        inputFrame = tk.Frame(master=self.mianFram)
         inputFrame.pack(fill='both', side=LEFT, expand=YES)
         imageFrame = tk.Frame(master=inputFrame)
 
@@ -183,6 +191,12 @@ class Application(object):
         self.notebook.pack(fill='both', expand=YES)
         noteBookFrame.pack(fill='both', expand=YES)
 
+    def int_file_name(self):
+        if(self.id =='1'):
+            self.file_name = 'leap_data'
+        else:
+            self.file_name = 'glove_data'
+
     def show_menu(self, event):
         self.menu.tk_popup(event.x_root, event.y_root)
 
@@ -237,14 +251,14 @@ class Application(object):
             print (fn)
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    os.remove('../data/' + fn)
+                    os.remove('../'+self.file_name+'/' + fn)
                 else:
-                    os.remove('../video/' + fn)
+                    os.remove('../'+self.file_name+'/' + fn)
             elif 'win32' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    os.remove('..\\data\\' + fn)
+                    os.remove('..\\'+self.file_name+'\\' + fn)
                 else:
-                    os.remove('..\\video\\' + fn)
+                    os.remove('..\\'+self.file_name+'\\' + fn)
             self.file.delete(item)
         except:
             messagebox.showerror("Error", "Error, please choose a item first")
@@ -256,12 +270,12 @@ class Application(object):
             print (fn)
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    subprocess.call(('xdg-open', '../data/' + fn))
+                    subprocess.call(('xdg-open', '../'+self.file_name+'/' + fn))
                 else:
                     subprocess.call(('xdg-open', '../video/' + fn))
             elif 'win32' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    os.startfile('..\\data\\' + fn)
+                    os.startfile('..\\'+self.file_name+'\\' + fn)
                 else:
                     os.startfile('..\\video\\' + fn)
         except:
@@ -274,12 +288,12 @@ class Application(object):
             print (fn[-4:])
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    subprocess.call(('xdg-open', '../data/' + fn))
+                    subprocess.call(('xdg-open', '../'+self.file_name+'/' + fn))
                 else:
                     subprocess.call(('xdg-open', '../video/' + fn))
             elif 'win32' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    os.startfile('..\\data\\' + fn)
+                    os.startfile('..\\'+self.file_name+'\\' + fn)
                 else:
                     os.startfile('..\\video\\' + fn)
         except:
@@ -300,10 +314,8 @@ class Application(object):
             print ("no thread")
 
     def back_menu(self):
-        self.master.quit()
-        self.master.destroy()
-        new_root = Tk()
-        GUI_Login.Application(new_root)
+        self.mianFram.destroy()
+        GUI_Login.Application(self.master)
 
     def isRunning(self):
         try:
@@ -342,17 +354,43 @@ class Application(object):
     def thread(self):
         if not self.isRunning():
             self.log.delete("1.0", END)
-            self.initialTimes = int(self.variable.get()) - 1
-            self.t1 = LeapMotion.LeapRun(account=self.account.get(), password=self.password.get(),
+            if(self.id =='2'):
+                self.initialTimes = int(self.variable.get()) - 1
+                self.t1 = Glove.GloveRun(account=self.account.get(), password=self.password.get(),
                                          suffix=self.suffix.get(),
                                          times=self.variable.get(),
-                                         ax1=self.ax1, ax2=self.ax2,
+                                         canvas_draw=self.canvas,
+                                         fig=self.fig, log=self.log,
+                                         file=self.file, writingTimes=self.writingTimes,
+                                         maxtimes=self.maxtimes,ax=self.ax)
+            else:
+                self.log.delete("1.0", END)
+                self.initialTimes = int(self.variable.get()) - 1
+                self.t1 = LeapMotion.LeapRun(account=self.account.get(), password=self.password.get(),
+                                             suffix=self.suffix.get(),
+                                             times=self.variable.get(),
+                                             ax1=self.ax1, ax2=self.ax2,
+                                             canvas_draw=self.canvas,
+                                             fig=self.fig, log=self.log,
+                                             file=self.file, writingTimes=self.writingTimes,
+                                             maxtimes=self.maxtimes, killAll=self.kill_all)
+            self.t1.setDaemon(True)
+            self.t1.start()
+
+    def thread_glove(self):
+        if not self.isRunning():
+            self.log.delete("1.0", END)
+            self.initialTimes = int(self.variable.get()) - 1
+            self.t1 = Glove.GloveRun(account=self.account.get(), password=self.password.get(),
+                                         suffix=self.suffix.get(),
+                                         times=self.variable.get(),
                                          canvas_draw=self.canvas,
                                          fig=self.fig, log=self.log,
                                          file=self.file, writingTimes=self.writingTimes,
                                          maxtimes=self.maxtimes)
             self.t1.setDaemon(True)
             self.t1.start()
+
 
     def writingTimes(self):
         self.initialTimes = self.initialTimes + 1

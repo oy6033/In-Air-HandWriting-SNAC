@@ -17,9 +17,10 @@ else:
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
 
+
 class LeapRun(threading.Thread):
 
-    def __init__(self, account, password, suffix, times, ax1, ax2, canvas_draw, fig, log, file, writingTimes, maxtimes):
+    def __init__(self, account, password, suffix, times, ax1, ax2, canvas_draw, fig, log, file, writingTimes, maxtimes, killAll):
         threading.Thread.__init__(self)
         self.account = account
         self.password = password
@@ -38,6 +39,7 @@ class LeapRun(threading.Thread):
         self.file = file
         self.writingTimes = writingTimes
         self.maxtimes = maxtimes
+        self.killAll = killAll
 
     def plot2(self):
         self.ax2.cla()
@@ -188,6 +190,7 @@ class LeapRun(threading.Thread):
             len(frame.fingers), len(frame.tools), len(frame.gestures()))
         print(frame_str)
 
+        # GUI_Login.Application().go_main.log.insert('1.0', frame_str + "\n")
         self.log.insert('1.0', frame_str + "\n")
 
         # sensor data
@@ -242,7 +245,7 @@ class LeapRun(threading.Thread):
                 tss[i] = frame.timestamp
             except IndexError:
                 self.log.insert('1.0', "ts array index out of range\n")
-                self.app.kill_all()
+                self.killAll()
 
             valids[i] = 1
 
@@ -337,7 +340,7 @@ class LeapRun(threading.Thread):
                 self.writingTimes()
         print("# of frames: %d, last ts: %d, out of range: %d" % (l, tss[l - 1], out_of_range))
 
-        fd = open('../data/' + fn, 'w')
+        fd = open('../leap_data/' + fn, 'w')
         for i in range(0, l):
 
             tip = tuple(self.tip_co[i])
