@@ -7,13 +7,13 @@ import threading
 import struct
 import datetime
 import os
-import serial.tools.list_ports
 
 
 
 class GloveRun(threading.Thread):
 
-    def __init__(self, account, password, suffix, times, canvas_draw, fig, log, file, writingTimes, maxtimes, ax):
+    def __init__(self, account, password, suffix, times, canvas_draw, fig, log,
+                 file, writingTimes, maxtimes, ax, input):
         threading.Thread.__init__(self)
         self.account = account
         self.password = password
@@ -30,8 +30,8 @@ class GloveRun(threading.Thread):
         self.file = file
         self.writingTimes = writingTimes
         self.maxtimes = maxtimes
-        plist = list(serial.tools.list_ports.comports())
-        self.ser = serial.Serial(str(plist[0]).split(' ')[0], 9600)
+        # self.ser = serial.Serial('/dev/ttyACM0', 576000)
+        self.ser = serial.Serial(input, 576000)
         self.ax = ax
 
     def message(self, message_name, message, start, end, color, underline, is_open):

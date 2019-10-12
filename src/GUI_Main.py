@@ -29,14 +29,15 @@ import Glove
 
 class Application(object):
 
-    def __init__(self, master=None, id=None):
+    def __init__(self, master=None, id=None, input=None):
         self.master = master
         self.maxtimes = 5
         self.id = id
         self.master.title("In-Air Hand Writing")
         self.createWidgets()
-        self.int_file_name()
+        self.init_file_name()
         self.master.protocol("WM_DELETE_WINDOW", self.back_menu)
+        self.input = input
 
     def createWidgets(self, w=1180, h=800):
         ws = self.master.winfo_screenwidth()
@@ -116,7 +117,7 @@ class Application(object):
         cameraFrame.pack(fill='both', expand=YES)
 
         cameraFrame = tk.Frame(master=imageFrame)
-        ttk.Button(master=cameraFrame, text='Back to Menu', command=self.back_menu).pack(fill=X, side=LEFT,
+        ttk.Button(master=cameraFrame, text='Go to', command=self.go_to_glove).pack(fill=X, side=LEFT,
                                                                                             expand=YES)
         cameraFrame.pack(fill='both', expand=YES)
 
@@ -191,7 +192,7 @@ class Application(object):
         self.notebook.pack(fill='both', expand=YES)
         noteBookFrame.pack(fill='both', expand=YES)
 
-    def int_file_name(self):
+    def init_file_name(self):
         if(self.id =='1'):
             self.file_name = 'leap_data'
         else:
@@ -315,7 +316,11 @@ class Application(object):
 
     def back_menu(self):
         self.mianFram.destroy()
-        GUI_Login.Application(self.master)
+        GUI_Login.Application(self.master, self.input)
+
+    def go_to_glove(self):
+        self.mianFram.destroy()
+        Application(self.master, id='2', input=self.input)
 
     def isRunning(self):
         try:
@@ -362,7 +367,7 @@ class Application(object):
                                          canvas_draw=self.canvas,
                                          fig=self.fig, log=self.log,
                                          file=self.file, writingTimes=self.writingTimes,
-                                         maxtimes=self.maxtimes,ax=self.ax)
+                                         maxtimes=self.maxtimes,ax=self.ax, input = self.input)
             else:
                 self.log.delete("1.0", END)
                 self.initialTimes = int(self.variable.get()) - 1
@@ -377,19 +382,6 @@ class Application(object):
             self.t1.setDaemon(True)
             self.t1.start()
 
-    def thread_glove(self):
-        if not self.isRunning():
-            self.log.delete("1.0", END)
-            self.initialTimes = int(self.variable.get()) - 1
-            self.t1 = Glove.GloveRun(account=self.account.get(), password=self.password.get(),
-                                         suffix=self.suffix.get(),
-                                         times=self.variable.get(),
-                                         canvas_draw=self.canvas,
-                                         fig=self.fig, log=self.log,
-                                         file=self.file, writingTimes=self.writingTimes,
-                                         maxtimes=self.maxtimes)
-            self.t1.setDaemon(True)
-            self.t1.start()
 
 
     def writingTimes(self):

@@ -3,11 +3,13 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 import GUI_Main
+import sys
 
 
 class Application(object):
-    def __init__(self, master=None):
+    def __init__(self, master=None, input=None):
         self.master = master
+        self.input = input
         self.master.protocol("WM_DELETE_WINDOW", self._quit)
         self.create()
 
@@ -26,12 +28,12 @@ class Application(object):
     def leap(self):
         # self.fm.quit()
         self.fm.destroy()
-        GUI_Main.Application(self.master, "1")
+        GUI_Main.Application(self.master, "1", self.input)
 
     def leap2(self):
         # self.fm.quit()
         self.fm.destroy()
-        GUI_Main.Application(self.master, "2")
+        GUI_Main.Application(self.master, "2", self.input)
 
 
     def _quit(self):
@@ -42,9 +44,15 @@ class Application(object):
 
 
 if __name__ == '__main__':
+    input = None
+    try:
+        input = sys.argv[1]
+    except:
+        input = '/dev/ttyACM0'
+        print "No parameter detect"
     root = Tk()
     root.title("In-Air Hand Writing")
-    display = Application(root)
+    display = Application(root, input)
     root.mainloop()
 
 #
