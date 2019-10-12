@@ -20,7 +20,7 @@ class Application(object):
         self.fm = Frame(self.master)
         ttk.Button(self.fm, text='Leap Motion', command=self.leap, width=200).pack(side=TOP, fill=BOTH, expand=1)
         ttk.Button(self.fm, text='Glove', command=self.leap2, width=200).pack(side=TOP, fill=BOTH, expand=1)
-        ttk.Button(self.fm, text='Bottom', command=self.leap, width=200).pack(side=TOP, fill=BOTH, expand=1)
+        ttk.Button(self.fm, text='Bottom', width=200).pack(side=TOP, fill=BOTH, expand=1)
         self.fm.pack(fill=BOTH, expand=YES)
 
     def leap(self):

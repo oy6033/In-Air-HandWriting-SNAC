@@ -250,15 +250,15 @@ class Application(object):
             fn = self.file.item(item, 'text')
             print (fn)
             if 'linux' in str(sys.platform):
-                if fn[-4:] == '.txt':
-                    os.remove('../'+self.file_name+'/' + fn)
+                if fn[-4:] == '.avi':
+                    os.remove('../video/' + fn)
                 else:
                     os.remove('../'+self.file_name+'/' + fn)
             elif 'win32' in str(sys.platform):
-                if fn[-4:] == '.txt':
-                    os.remove('..\\'+self.file_name+'\\' + fn)
+                if fn[-4:] == '.avi':
+                    os.remove('..\\video\\' + fn)
                 else:
-                    os.remove('..\\'+self.file_name+'\\' + fn)
+                    os.remove('..\\' + self.file_name + '\\' + fn)
             self.file.delete(item)
         except:
             messagebox.showerror("Error", "Error, please choose a item first")
