@@ -76,6 +76,7 @@ class GloveRun(threading.Thread):
         for j in range(12):
             self.ax = self.fig.add_subplot(12, 1, j + 1)
             self.ax.clear()
+        self.canvas.draw_idle()
 
 
 
