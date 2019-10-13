@@ -117,7 +117,7 @@ class Application(object):
         cameraFrame.pack(fill='both', expand=YES)
 
         cameraFrame = tk.Frame(master=imageFrame)
-        ttk.Button(master=cameraFrame, text='Change Frame', command=self.go_to_glove).pack(fill=X, side=LEFT,
+        ttk.Button(master=cameraFrame, text='Change Frame', command=self.change_frame).pack(fill=X, side=LEFT,
                                                                                             expand=YES)
         cameraFrame.pack(fill='both', expand=YES)
 
@@ -318,7 +318,7 @@ class Application(object):
         self.mianFram.destroy()
         GUI_Login.Application(self.master, self.input)
 
-    def go_to_glove(self):
+    def change_frame(self):
         self.mianFram.destroy()
         if self.id =='1':
             Application(self.master, id='2', input=self.input)
