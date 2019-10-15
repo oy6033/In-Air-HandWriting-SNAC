@@ -12,9 +12,20 @@ Pre-Install:
 * Tkinter
 * Leap
 * matplotlib
+* pySerial
+* opencv-python
+* numpy
 
-Run command to build package:\
+Make standalone application:
+* py2app (Mac only)
+* pyinstaller
+
+
+Run command to build package in pyinstaller:\
 ``` pyinstaller -F 'GUI_Pack.py' --hidden-import='PIL._tkinter_finder'```
+
+Run command to build package in py2app:\
+``` python setup.py py2app --package=PIL,cv2```
 
 Run command to execute directly:\
 ``` python GUI_Pack.py```
