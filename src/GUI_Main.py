@@ -12,12 +12,6 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 import os, sys, inspect, subprocess
-if not os.path.exists('../leap_data'):
-    os.makedirs('../leap_data')
-if not os.path.exists('../video'):
-    os.makedirs('../video')
-if not os.path.exists('../glove_data'):
-    os.makedirs('../glove_data')
 import LeapMotion
 import Camera
 import GUI_Login

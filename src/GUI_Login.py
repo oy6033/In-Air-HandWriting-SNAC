@@ -1,11 +1,11 @@
-import tkinter as tk
 from tkinter import *
 from tkinter import ttk
-from tkinter import messagebox
 import GUI_Main
 import sys
-
-
+import SystemChecking
+check = SystemChecking.Application()
+src_dir, arch_dir = check.system_checking()
+check.create_file()
 class Application(object):
     def __init__(self, master=None, input=None):
         self.master = master

@@ -3,6 +3,9 @@ import cv2
 from PIL import ImageTk
 import PIL.Image
 import datetime
+import SystemChecking
+check = SystemChecking.Application()
+src_dir, arch_dir = check.system_checking()
 class Camera(threading.Thread):
     def __init__(self, fn, maxtimes, l, t, file, message):
         threading.Thread.__init__(self)
@@ -19,7 +22,7 @@ class Camera(threading.Thread):
         cap = cv2.VideoCapture(0)
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter("../video/" + self.fn, fourcc, 20, (640, 480))
+        out = cv2.VideoWriter(check.separator+'video'+check.single + self.fn, fourcc, 20, (640, 480))
 
         while cap.isOpened():
             ret, frame = cap.read()

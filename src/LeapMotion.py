@@ -4,16 +4,9 @@ import ctypes
 import time
 import os, sys, inspect, subprocess
 import datetime
-# Leap Instantiation
-src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
-if 'linux' in str(sys.platform):
-    arch_dir = '../lib_Linux/x64' if sys.maxsize > 2 ** 32 else '../lib_Linux/x86'
-elif 'win32' in str(sys.platform):
-    arch_dir = '../lib_Windows/x64' if sys.maxsize > 2 ** 32 else '../lib_Windows/x86'
-elif 'darwin' in str(sys.platform):
-    arch_dir = '../lib_Mac' if sys.maxsize > 2 ** 32 else '../lib_Mac'
-else:
-    sys.exit()
+import SystemChecking
+check = SystemChecking.Application()
+src_dir, arch_dir = check.system_checking()
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
 
@@ -340,7 +333,7 @@ class LeapRun(threading.Thread):
                 self.writingTimes()
         print("# of frames: %d, last ts: %d, out of range: %d" % (l, tss[l - 1], out_of_range))
 
-        fd = open('../leap_data/' + fn, 'w')
+        fd = open(check.separator+'leap_data'+check.single + fn, 'w')
         for i in range(0, l):
 
             tip = tuple(self.tip_co[i])

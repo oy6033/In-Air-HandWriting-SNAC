@@ -6,7 +6,9 @@ import serial
 import threading
 import struct
 import datetime
-import os
+import SystemChecking
+check = SystemChecking.Application()
+src_dir, arch_dir = check.system_checking()
 
 
 
@@ -165,7 +167,7 @@ class GloveRun(threading.Thread):
 
         data[:, 0] -= data[0, 0]
 
-        np.savetxt('../glove_data/'+fn, data, fmt='%.8f', delimiter=', ')
+        np.savetxt(check.separator+'glove_data'+check.single+fn, data, fmt='%.8f', delimiter=', ')
 
         self.ser.close()
 
