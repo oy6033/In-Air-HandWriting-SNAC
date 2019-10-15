@@ -9,7 +9,7 @@ src_dir, arch_dir = check.system_checking()
 class Camera(threading.Thread):
     def __init__(self, fn, maxtimes, l, t, file, message):
         threading.Thread.__init__(self)
-        self.fn = fn
+        self.fn = fn + check.video_encoding
         self.maxtimes = maxtimes
         self.stop = 0
         self.l = l
@@ -55,5 +55,5 @@ class Camera(threading.Thread):
         else:
             self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(self.maxtimes), time))
 
-        message = self.fn + check.video_encoding + " has been saved successfully\n"
+        message = self.fn + " has been saved successfully\n"
         self.message('videosave', message, 0, len(message), 'purple', False, True)
