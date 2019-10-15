@@ -22,7 +22,10 @@ class Camera(threading.Thread):
         cap = cv2.VideoCapture(0)
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter(check.separator+'video'+check.single + self.fn, fourcc, 20, (640, 480))
+        fn = str(check.separator+'video'+check.single + self.fn)
+        w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        out = cv2.VideoWriter(fn, fourcc, 20, (int(w), int(h)))
 
         while cap.isOpened():
             ret, frame = cap.read()
