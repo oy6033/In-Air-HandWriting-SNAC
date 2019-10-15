@@ -343,7 +343,7 @@ class Application(object):
         self.t.wm_title("Camera")
         self.l = tk.Label(self.t)
         self.l.pack(side="top", fill="both", expand=True)
-        fn = self.account.get() + "_" + self.password.get() + ".mp4"
+        fn = self.account.get() + "_" + self.password.get()
         self.t3 = Camera.Camera(fn=fn, maxtimes=self.maxtimes, l=self.l, t=self.t, file=self.file,
                                 message=self.message)
         self.t3.setDaemon(True)

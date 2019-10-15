@@ -22,7 +22,7 @@ class Camera(threading.Thread):
         cap = cv2.VideoCapture(0)
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        fn = str(check.separator+'video'+check.single + self.fn)
+        fn = str(check.separator+'video'+check.single + self.fn + check.video_encoding)
         w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
         h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         out = cv2.VideoWriter(fn, fourcc, 20, (int(w), int(h)))
@@ -55,5 +55,5 @@ class Camera(threading.Thread):
         else:
             self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(self.maxtimes), time))
 
-        message = self.fn + " has been saved successfully\n"
+        message = self.fn + check.video_encoding + " has been saved successfully\n"
         self.message('videosave', message, 0, len(message), 'purple', False, True)
