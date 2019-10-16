@@ -28,12 +28,12 @@ class Application(object):
     def leap(self):
         # self.fm.quit()
         self.fm.destroy()
-        GUI_Main.Application(self.master, "1", self.input)
+        GUI_Main.Application(self.master, "1", self.input, check.leap_data_path(), check.video_data_path(), check.glove_data_path())
 
     def leap2(self):
         # self.fm.quit()
         self.fm.destroy()
-        GUI_Main.Application(self.master, "2", self.input)
+        GUI_Main.Application(self.master, "2", self.input, check.glove_data_path(), check.video_data_path(), check.leap_data_path())
 
 
     def _quit(self):

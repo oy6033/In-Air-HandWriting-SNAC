@@ -23,13 +23,15 @@ import Glove
 
 class Application(object):
 
-    def __init__(self, master=None, id=None, input=None):
+    def __init__(self, master=None, id=None, input=None, data_path=None, video_path=None, temp_path =None):
         self.master = master
         self.maxtimes = 5
         self.id = id
         self.master.title("In-Air Hand Writing")
         self.createWidgets()
-        self.init_file_name()
+        self.data_path = data_path
+        self.video_path = video_path
+        self.temp_path = temp_path
         self.master.protocol("WM_DELETE_WINDOW", self.back_menu)
         self.input = input
 
@@ -186,12 +188,6 @@ class Application(object):
         self.notebook.pack(fill='both', expand=YES)
         noteBookFrame.pack(fill='both', expand=YES)
 
-    def init_file_name(self):
-        if(self.id =='1'):
-            self.file_name = 'leap_data'
-        else:
-            self.file_name = 'glove_data'
-
     def show_menu(self, event):
         self.menu.tk_popup(event.x_root, event.y_root)
 
@@ -246,14 +242,14 @@ class Application(object):
             print (fn)
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.avi':
-                    os.remove('../video/' + fn)
+                    os.remove(self.video_path + fn)
                 else:
-                    os.remove('../'+self.file_name+'/' + fn)
+                    os.remove(self.data_path + fn)
             elif 'win32' in str(sys.platform):
-                if fn[-4:] == '.avi':
-                    os.remove('..\\video\\' + fn)
+                if fn[-4:] == '.mp4':
+                    os.remove(self.video_path + fn)
                 else:
-                    os.remove('..\\' + self.file_name + '\\' + fn)
+                    os.remove(self.data_path + fn)
             self.file.delete(item)
         except:
             messagebox.showerror("Error", "Error, please choose a item first")
@@ -263,16 +259,17 @@ class Application(object):
             item = self.file.selection()[0]
             fn = self.file.item(item, 'text')
             print (fn)
+
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    subprocess.call(('xdg-open', '../'+self.file_name+'/' + fn))
+                    subprocess.call(('xdg-open', self.data_path + fn))
                 else:
-                    subprocess.call(('xdg-open', '../video/' + fn))
+                    subprocess.call(('xdg-open', self.video_path + fn))
             elif 'win32' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    os.startfile('..\\'+self.file_name+'\\' + fn)
+                    os.startfile(self.data_path + fn)
                 else:
-                    os.startfile('..\\video\\' + fn)
+                    os.startfile(self.video_path + fn)
         except:
             messagebox.showerror("Error", "Error, please choose a item first")
 
@@ -283,14 +280,14 @@ class Application(object):
             print (fn[-4:])
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    subprocess.call(('xdg-open', '../'+self.file_name+'/' + fn))
+                    subprocess.call(('xdg-open', self.data_path + fn))
                 else:
-                    subprocess.call(('xdg-open', '../video/' + fn))
+                    subprocess.call(('xdg-open', self.video_path + fn))
             elif 'win32' in str(sys.platform):
                 if fn[-4:] == '.txt':
-                    os.startfile('..\\'+self.file_name+'\\' + fn)
+                    os.startfile(self.data_path + fn)
                 else:
-                    os.startfile('..\\video\\' + fn)
+                    os.startfile(self.video_path + fn)
         except:
             messagebox.showerror("Error", "Error, please choose a item first")
 
@@ -313,11 +310,19 @@ class Application(object):
         GUI_Login.Application(self.master, self.input)
 
     def change_frame(self):
+        tree_view_list = {}
+        for line in self.file.get_children():
+            values_list = []
+            for value in self.file.item(line)['values']:
+                values_list.append(value)
+            tree_view_list[line] = values_list
+        print tree_view_list
+
         self.mianFram.destroy()
         if self.id =='1':
-            Application(self.master, id='2', input=self.input)
+            Application(self.master, id='2', input=self.input, data_path=self.temp_path, video_path=self.video_path, temp_path= self.data_path)
         if self.id =='2':
-            Application(self.master, id='1', input=self.input)
+            Application(self.master, id='1', input=self.input, data_path=self.temp_path, video_path=self.video_path, temp_path= self.data_path)
 
     def isRunning(self):
         try:
@@ -345,7 +350,7 @@ class Application(object):
         self.l.pack(side="top", fill="both", expand=True)
         fn = self.account.get() + "_" + self.password.get()
         self.t3 = Camera.Camera(fn=fn, maxtimes=self.maxtimes, l=self.l, t=self.t, file=self.file,
-                                message=self.message)
+                                message=self.message, video_path=self.video_path)
         self.t3.setDaemon(True)
         self.t3.start()
 
@@ -364,7 +369,7 @@ class Application(object):
                                          canvas_draw=self.canvas,
                                          fig=self.fig, log=self.log,
                                          file=self.file, writingTimes=self.writingTimes,
-                                         maxtimes=self.maxtimes,ax=self.ax, input = self.input)
+                                         maxtimes=self.maxtimes,ax=self.ax, input = self.input, data_path=self.data_path)
             else:
                 self.log.delete("1.0", END)
                 self.initialTimes = int(self.variable.get()) - 1
@@ -375,7 +380,7 @@ class Application(object):
                                              canvas_draw=self.canvas,
                                              fig=self.fig, log=self.log,
                                              file=self.file, writingTimes=self.writingTimes,
-                                             maxtimes=self.maxtimes, killAll=self.kill_all)
+                                             maxtimes=self.maxtimes, killAll=self.kill_all, data_path=self.data_path)
             self.t1.setDaemon(True)
             self.t1.start()
 

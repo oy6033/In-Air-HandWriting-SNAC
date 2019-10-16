@@ -15,7 +15,7 @@ src_dir, arch_dir = check.system_checking()
 class GloveRun(threading.Thread):
 
     def __init__(self, account, password, suffix, times, canvas_draw, fig, log,
-                 file, writingTimes, maxtimes, ax, input):
+                 file, writingTimes, maxtimes, ax, input, data_path):
         threading.Thread.__init__(self)
         self.account = account
         self.password = password
@@ -35,6 +35,7 @@ class GloveRun(threading.Thread):
         # self.ser = serial.Serial('/dev/ttyACM0', 576000)
         self.ser = serial.Serial(input, 576000)
         self.ax = ax
+        self.data_path = data_path
 
     def message(self, message_name, message, start, end, color, underline, is_open):
         if is_open == False:
@@ -167,7 +168,7 @@ class GloveRun(threading.Thread):
 
         data[:, 0] -= data[0, 0]
 
-        np.savetxt(check.separator+'glove_data'+check.single+fn, data, fmt='%.8f', delimiter=', ')
+        np.savetxt(self.data_path + fn, data, fmt='%.8f', delimiter=', ')
 
         self.ser.close()
 

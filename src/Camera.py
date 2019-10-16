@@ -7,7 +7,7 @@ import SystemChecking
 check = SystemChecking.Application()
 src_dir, arch_dir = check.system_checking()
 class Camera(threading.Thread):
-    def __init__(self, fn, maxtimes, l, t, file, message):
+    def __init__(self, fn, maxtimes, l, t, file, message, video_path):
         threading.Thread.__init__(self)
         self.fn = fn
         self.maxtimes = maxtimes
@@ -16,13 +16,14 @@ class Camera(threading.Thread):
         self.t = t
         self.file = file
         self.message = message
+        self.video_path = video_path
 
 
     def run(self):
         cap = cv2.VideoCapture(0)
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        fn = str(check.separator+'video'+check.single + self.fn + check.video_encoding)
+        fn = str(self.video_path + self.fn + check.video_encoding)
         w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
         h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         out = cv2.VideoWriter(fn, fourcc, 20, (int(w), int(h)))

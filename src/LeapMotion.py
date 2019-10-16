@@ -13,7 +13,7 @@ import Leap
 
 class LeapRun(threading.Thread):
 
-    def __init__(self, account, password, suffix, times, ax1, ax2, canvas_draw, fig, log, file, writingTimes, maxtimes, killAll):
+    def __init__(self, account, password, suffix, times, ax1, ax2, canvas_draw, fig, log, file, writingTimes, maxtimes, killAll , data_path):
         threading.Thread.__init__(self)
         self.account = account
         self.password = password
@@ -33,6 +33,7 @@ class LeapRun(threading.Thread):
         self.writingTimes = writingTimes
         self.maxtimes = maxtimes
         self.killAll = killAll
+        self.data_path = data_path
 
     def plot2(self):
         self.ax2.cla()
@@ -333,7 +334,7 @@ class LeapRun(threading.Thread):
                 self.writingTimes()
         print("# of frames: %d, last ts: %d, out of range: %d" % (l, tss[l - 1], out_of_range))
 
-        fd = open(check.separator+'leap_data'+check.single + fn, 'w')
+        fd = open(self.data_path + fn, 'w')
         for i in range(0, l):
 
             tip = tuple(self.tip_co[i])

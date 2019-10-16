@@ -36,3 +36,13 @@ class Application(object):
             os.makedirs(self.separator+'video')
         if not os.path.exists(self.separator+'glove_data'):
             os.makedirs(self.separator+'glove_data')
+
+
+    def leap_data_path(self):
+        return self.separator + 'leap_data' + self.single
+
+    def video_data_path(self):
+        return self.separator + 'video' + self.single
+
+    def glove_data_path(self):
+        return self.separator + 'glove_data' + self.single
