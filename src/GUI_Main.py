@@ -1,7 +1,7 @@
 import datetime
 import matplotlib
 matplotlib.use('TkAgg')
-from matplotlib.backends._backend_tk import NavigationToolbar2Tk
+from matplotlib.backends import backend_tkagg
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -47,8 +47,9 @@ class Application(object):
         self.mianFram.bind_all('<Return>', self.push_enter)
 
         # Graph Right
+        color ='#FFFFFF'
         if self.id == '1':
-            self.fig = plt.figure(figsize=(5, 6))
+            self.fig = plt.figure(figsize=(5, 6),facecolor=color)
             self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
 
             self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
@@ -59,17 +60,17 @@ class Application(object):
             self.canvas._tkcanvas.pack(fill='both', side=LEFT)
             self.ax1.mouse_init()
             self.ax2.mouse_init()
-            toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
+            toolbar = backend_tkagg.NavigationToolbar2TkAgg(self.canvas, toolbarFrame)
             toolbar.update()
         elif self.id == '2':
-            self.fig = plt.figure(figsize=(6, 4))
+            self.fig = plt.figure(figsize=(6, 4),facecolor=color)
             for j in range(12):
                 self.ax = self.fig.add_subplot(12, 1, j + 1)
             self.canvas = FigureCanvasTkAgg(self.fig, master=self.mianFram)
             toolbarFrame = tk.Frame(master=self.mianFram)
             toolbarFrame.pack(fill='both', side=BOTTOM)
             self.canvas._tkcanvas.pack(fill='both', side=LEFT)
-            toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
+            toolbar = backend_tkagg.NavigationToolbar2TkAgg(self.canvas, toolbarFrame)
             toolbar.update()
 
         # input Frame Left
@@ -88,7 +89,7 @@ class Application(object):
             img = img.resize((300, 388), PIL.Image.ANTIALIAS)
             self.my_images.append(ImageTk.PhotoImage(img))
         self.images_index = 0
-        self.image_on_canvas = self.canvasImage.create_image(150, 150, image=self.my_images[self.images_index])
+        self.image_on_canvas = self.canvasImage.create_image(150, 110, image=self.my_images[self.images_index])
 
         self.image_v = StringVar()
         self.image_v.set("1")
