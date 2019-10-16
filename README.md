@@ -22,7 +22,7 @@ Make standalone application:
 
 
 Run command to build package in pyinstaller:\
-``` pyinstaller -F 'GUI_Pack.py' --hidden-import='PIL._tkinter_finder'```
+``` pyinstaller -F 'GUI_Login.py' --hidden-import='PIL._tkinter_finder'```
 
 Run command to build package in py2app:\
 ``` python setup.py py2app --package=PIL,cv2```
@@ -37,6 +37,9 @@ Run command to give permission for file:\
 
 Run command to give permission for CDC:\
 ``` chmod 666 /dev/ttyACM0 ```
+
+Run command to input USB port for glove (default port is ttyACM0):\
+./GUI_Login 'input your port'
 
 
 ## Support
