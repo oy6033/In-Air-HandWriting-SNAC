@@ -1,4 +1,6 @@
 import datetime
+import threading
+
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
@@ -11,11 +13,13 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+import codecs # for display non-ascii characters
 import os, sys, inspect, subprocess
 import LeapMotion
 import Camera
 import GUI_Login
 import Glove
+import client_ui
 
 
 
@@ -61,6 +65,8 @@ class Application(object):
             self.ax2.mouse_init()
             toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
             toolbar.update()
+            self.right_part()
+
         elif self.id == '2':
             self.fig = plt.figure(figsize=(6, 4))
             for j in range(12):
@@ -71,7 +77,212 @@ class Application(object):
             self.canvas._tkcanvas.pack(fill='both', side=LEFT)
             toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
             toolbar.update()
+            self.right_part()
 
+        elif self.id == '3':
+            c_leap = client_ui.ClientLeap()
+            x_leap = threading.Thread(target=c_leap.run)
+            x_leap.start()
+
+            c_glove = client_ui.ClientGlove()
+
+            x_glove = threading.Thread(target=c_glove.run)
+            x_glove.start()
+            ui = client_ui.ClientUI(c_leap, c_glove)
+            ui.setup_ui()
+
+
+            self.load_meta_files()
+
+            self.nr_clients = 10
+            self.client_id = 0
+
+            self.lan_list = ['English', 'Chinese']
+            self.lan_index = 0
+
+            self.lan_dict = {'English': self.words_eng,
+                             'Chinese': self.words_chs}
+
+            self.group_list = ['group %d' % x for x in range(100)]
+            self.group_index = 0
+
+            self.nr_groups = 100
+            self.group_size = 100
+
+            self.word_list = self.words_eng
+            self.word_index = 0
+
+            self.started = False
+
+            self.info_str = 'Stopped'
+
+            self.warning_str = ''
+
+            # self.ii = self.group_index * self.group_size + self.word_index
+
+
+            client_list = ['client %d' % x for x in range(10)]
+            group_list = ['group %d' % x for x in range(100)]
+
+
+
+            # client
+            client = tk.Frame(master=self.mianFram)
+            ttk.Button(master=client, text='<-', command=ui.on_prev_word).pack(fill=X, side=LEFT)
+            self.client_v = StringVar()
+            self.client_v.set('client 0')
+            w = ttk.Combobox(master=client, state="readonly", textvariable=self.client_v, values=client_list,
+                             justify='center',
+                             width=37)
+            w.pack(fill=X, side=LEFT)
+            ttk.Button(master=client, text='->', command=self.on_next_word).pack(fill=X, side=LEFT, expand=YES)
+            client.pack(fill='both', expand=YES)
+
+            # language
+            lan = tk.Frame(master=self.mianFram)
+            ttk.Button(master=lan, text='<-', command=ui.on_prev_word).pack(fill=X, side=LEFT)
+            self.lan_v = StringVar()
+            self.lan_v.set('English')
+            self.lan_box = ttk.Combobox(master=lan, state="readonly", textvariable=self.lan_v, values=self.lan_list,
+                             justify='center',
+                             width=37)
+            self.lan_box.bind("<<ComboboxSelected>>", self.lan_change)
+            self.lan_box.pack(fill=X, side=LEFT)
+            ttk.Button(master=lan, text='->', command=self.on_next_word).pack(fill=X, side=LEFT, expand=YES)
+            lan.pack(fill='both', expand=YES)
+
+            # group
+            group = tk.Frame(master=self.mianFram)
+            ttk.Button(master=group, text='<-', command=ui.on_prev_word).pack(fill=X, side=LEFT)
+            self.group_v = StringVar()
+            self.group_v.set('group 0')
+            group_box = ttk.Combobox(master=group, state="readonly", textvariable=self.group_v, values=group_list,
+                             justify='center',
+                             width=37)
+            group_box.bind("<<ComboboxSelected>>", self.group_change)
+            group_box.pack(fill=X, side=LEFT)
+            ttk.Button(master=group, text='->', command=self.on_next_word).pack(fill=X, side=LEFT, expand=YES)
+            group.pack(fill='both', expand=YES)
+
+            # word
+            self.word_label = ['word %d' % x for x in range(100)]
+            word = tk.Frame(master=self.mianFram)
+            ttk.Button(master=word, text='<-', command=self.on_prev_word).pack(fill=X, side=LEFT)
+            self.word_v = StringVar()
+            self.word_v.set('word %d' % 0)
+            self.word_box = ttk.Combobox(master=word, state="readonly", textvariable=self.word_v, values=self.word_label,
+                             justify='center',
+                             width=37)
+            self.word_box.bind("<<ComboboxSelected>>", self.update_text)
+            self.word_box.pack(fill=X, side=LEFT)
+            # w.bind("<space>", self.choose_image)
+            ttk.Button(master=word, text='->', command=self.on_next_word).pack(fill=X, side=LEFT, expand=YES)
+            word.pack(fill='both', expand=YES)
+
+            # show word
+            self.v = StringVar()
+            self.v.set(self.word_list[0])
+            show_word = tk.Frame(master=self.mianFram)
+            self.show_label = tk.Label(master=show_word, textvariable=self.v, font=("Helvetica", 28)).pack(expand=YES,)
+            show_word.pack(fill='both', expand=YES)
+
+            # start
+            start_stop = tk.Frame(master=self.mianFram)
+            ttk.Button(master=start_stop, text='Start/Stop', command=ui.on_start_stop).pack(fill=X, side=LEFT, expand=YES)
+            start_stop.pack(fill='both', expand=YES)
+
+            ui.run()
+            x_leap.join(1)
+            x_glove.join(1)
+
+    def lan_change(self,event):
+        index = self.lan_v.get()
+        # self.word_list = ['word %d' % x for x in range(index, (index+1)*100)]
+        # self.word_box['values'] = ['word %d' % x for x in range(index,(index+1)*100)]
+        print index
+        self.word_list = self.lan_dict[index]
+        self.update_text(event=None)
+
+
+    def group_change(self, event):
+        index = int(self.group_v.get().split(' ')[1])
+        # self.word_list = ['word %d' % x for x in range(index, (index+1)*100)]
+        # self.word_box['values'] = ['word %d' % x for x in range(index,(index+1)*100)]
+        print index
+        self.word_v.set('word %d' % (index*100))
+        self.word_box.config(values=['word %d' % x for x in range(index*100, (index+1)*100)])
+        self.update_text(event=None)
+
+    def update_text(self, event):
+
+        self.word_index = int(self.word_v.get().split(' ')[1])
+        print self.word_index
+        self.v.set(self.word_list[self.word_index ])
+
+
+    def load_meta_files(self):
+        words_eng = []
+        words_chs = []
+
+        with open('..\\meta\\en_10k_random.txt', 'r') as fp_eng:
+
+            word = fp_eng.readline().strip()
+            words_eng.append(word)
+            while word:
+                word = fp_eng.readline().strip()
+                words_eng.append(word)
+
+        with codecs.open('..\\meta\\cn_10k_random.txt', encoding='utf-8') as fp_chs:
+
+            word = fp_chs.readline().strip()
+            words_chs.append(word)
+            while word:
+                word = fp_chs.readline().strip()
+                words_chs.append(word)
+
+        self.words_eng = words_eng
+        self.words_chs = words_chs
+
+
+    def on_prev_word(self):
+        index = int(self.group_v.get().split(' ')[1])
+        self.warning_str = ''
+        if self.word_index > index * 100:
+
+            self.word_index = self.word_index - 1
+
+        else:
+            self.warning_str = 'This is the first word.'
+            print (self.warning_str)
+
+
+        self.v.set(self.word_list[self.word_index])
+        self.word_v.set('word %d' % self.word_index)
+
+        print(self.word_index)
+        # self.update_text()
+
+    def on_next_word(self):
+
+        self.warning_str = ''
+
+        if self.word_index % 100 < self.group_size-1:
+
+            self.word_index = self.word_index + 1
+
+        else:
+            self.warning_str = 'This is the last word.'
+            print (self.warning_str)
+
+        self.v.set(self.word_list[self.word_index])
+        self.word_v.set('word %d' % self.word_index)
+
+        print(self.word_index)
+        # self.update_text()
+
+
+
+    def right_part(self):
         # input Frame Left
         inputFrame = tk.Frame(master=self.mianFram)
         inputFrame.pack(fill='both', side=LEFT, expand=YES)
@@ -187,6 +398,8 @@ class Application(object):
         self.notebook.add(self.file, text="File")
         self.notebook.pack(fill='both', expand=YES)
         noteBookFrame.pack(fill='both', expand=YES)
+
+
 
     def show_menu(self, event):
         self.menu.tk_popup(event.x_root, event.y_root)
