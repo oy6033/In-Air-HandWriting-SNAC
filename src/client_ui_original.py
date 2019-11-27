@@ -12,21 +12,28 @@ TODO:
 
 
 
+
+
+
 '''
 
 from __future__ import print_function
+
+
 import codecs # for display non-ascii characters
+
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Slider
 from matplotlib.widgets import Button
+
 import threading
 import time
+
 import os, sys, inspect, subprocess
 import SystemChecking
-import GUI_Main
 check = SystemChecking.Application()
 src_dir, arch_dir = check.system_checking()
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
@@ -38,6 +45,7 @@ import serial
 class ClientLeap(object):
 
     def __init__(self):
+        
         N = 2000
         self.N = N
         
@@ -133,7 +141,7 @@ class ClientLeap(object):
             
             if i >= N:
                 self.l = N
-                break
+                break;
             else:
                 i += 1
                 self.l += 1
@@ -372,6 +380,7 @@ class ClientGlove(object):
         self.sem = threading.Semaphore(0)
         
         self.fn = './sample.csv'
+
         import serial.tools.list_ports
         port_list = list(serial.tools.list_ports.comports())
         print(port_list[0])
@@ -529,7 +538,7 @@ class ClientGlove(object):
 
 
 class ClientUI(object):
-
+    
     def __init__(self, c_leap, c_glove):
     
         self.c_leap = c_leap
@@ -568,7 +577,7 @@ class ClientUI(object):
         words_eng = []
         words_chs = []
         
-        with open(check.separator+'meta'+check.single+'en_10k_random.txt', 'r') as fp_eng:
+        with open('../meta/en_10k_random.txt', 'r') as fp_eng:
             
             word = fp_eng.readline().strip()
             words_eng.append(word)
@@ -577,7 +586,7 @@ class ClientUI(object):
                 words_eng.append(word)
                 
 
-        with codecs.open(check.separator+'meta'+check.single+'cn_10k_random.txt', encoding='utf-8') as fp_chs:
+        with codecs.open('../meta/cn_10k_random.txt', encoding='utf-8') as fp_chs:
             
             word = fp_chs.readline().strip()
             words_chs.append(word)
@@ -588,7 +597,7 @@ class ClientUI(object):
         self.words_eng = words_eng
         self.words_chs = words_chs
     
-    def on_close(self):
+    def on_close(self, evt):
         
         if self.c_leap is not None:
             
@@ -600,20 +609,20 @@ class ClientUI(object):
         
         pass
 
-    def on_prev_client(self):
+    def on_prev_client(self, val):
     
         self.client_id = (self.client_id - 1) % self.nr_clients
         
         self.update_text()
 
-    def on_next_client(self):
+    def on_next_client(self, val):
     
         self.client_id = (self.client_id + 1) % self.nr_clients
         
         self.update_text()
 
     
-    def on_prev_lan(self):
+    def on_prev_lan(self, val):
     
         if self.lan_index > 0:
             
@@ -625,7 +634,7 @@ class ClientUI(object):
             self.update_text()
             
 
-    def on_next_lan(self):
+    def on_next_lan(self, val):
     
         if self.lan_index < len(self.lan_list) - 1:
             
@@ -637,7 +646,7 @@ class ClientUI(object):
             self.update_text()
 
 
-    def on_prev_group(self):
+    def on_prev_group(self, val):
     
         self.group_index = (self.group_index - 1) % self.nr_groups
         
@@ -653,7 +662,7 @@ class ClientUI(object):
         
         self.update_text()
 
-    def on_prev_word(self):
+    def on_prev_word(self, val):
         
         self.warning_str = ''
     
@@ -663,10 +672,10 @@ class ClientUI(object):
             
         else:
             self.warning_str = 'This is the first word.'
-        print(self.word_index)
+        
         self.update_text()
 
-    def on_next_word(self):
+    def on_next_word(self, val):
     
         self.warning_str = ''
     
@@ -676,11 +685,10 @@ class ClientUI(object):
             
         else:
             self.warning_str = 'This is the last word.'
-        print(self.word_index)
-
+        
         self.update_text()
 
-    def on_start_stop(self):
+    def on_start_stop(self, val):
     
         self.warning_str = ''
     
@@ -711,9 +719,9 @@ class ClientUI(object):
             ii = self.group_index * self.group_size + self.word_index
             
             lan_str = self.lan_list[self.lan_index]
-            fn_leap = (check.separator+'data_leap'+check.single+'%s'+check.single+'client%d_word%d') % \
+            fn_leap = '../data_leap/%s/client%d_word%d' % \
                 (lan_str, self.client_id, ii)
-            fn_glove = '..\\data_glove\\%s\\client%d_word%d' % \
+            fn_glove = '../data_glove/%s/client%d_word%d' % \
                 (lan_str, self.client_id, ii)
             
             if self.c_leap is not None:
@@ -724,8 +732,6 @@ class ClientUI(object):
             
                 self.c_glove.capture_start(fn_glove)
 
-
-
         
     
     def on_key_press(self, event):
@@ -734,21 +740,21 @@ class ClientUI(object):
         
         if event.key == ' ':
             
-            self.on_start_stop()
+            self.on_start_stop(None)
         
         if not self.started:
             
             if event.key == 'a':
                 
-                self.on_prev_word()
+                self.on_prev_word(None)
                 
             elif event.key == 'd':
                 
-                self.on_next_word()
+                self.on_next_word(None)
     
             elif event.key == 'q':
                 
-                self.on_prev_group()
+                self.on_prev_group(None)
                 
             elif event.key == 'e':
                 
@@ -777,8 +783,8 @@ class ClientUI(object):
                       verticalalignment='center')
         self.ax_group_t.axis('off')
 
-        self.ii = self.group_index * self.group_size + self.word_index
-        ii_str = 'word %d' % self.ii
+        ii = self.group_index * self.group_size + self.word_index
+        ii_str = 'word %d' % ii
         self.ax_word_t.clear()
         self.ax_word_t.text(0.5, 0.5, ii_str,
                       horizontalalignment='center',
@@ -792,7 +798,7 @@ class ClientUI(object):
 
         self.ax_label_t.clear()
         self.ax_label_t.text(0.5, 0.5, 
-                      self.word_list[self.ii],
+                      self.word_list[ii],
                       size=20,
                       fontdict=label_font,
                       horizontalalignment='center',
@@ -881,33 +887,34 @@ class ClientUI(object):
                 ax.plot(data[:l, j + 1 + 16])
                 
             self.fig1.canvas.draw_idle()
-            self.on_next_word()
             
             pass
         
         pass
     
     def setup_ui(self):
-
+    
         fig = plt.figure()
-
+        
         fig1 = plt.figure()
 
         fig.canvas.mpl_connect('close_event', self.on_close)
 
         fig.canvas.mpl_connect('key_press_event', self.on_key_press)
 
-        # axamp = fig.add_axes([0.25, .5, 0.50, 0.02])
-
-        # samp = Slider(axamp, 'Amp', 0, 1, valinit=0)
-
-        # samp.on_changed(self.update_slider)
-
+        #axamp = fig.add_axes([0.25, .5, 0.50, 0.02])
+        
+        #samp = Slider(axamp, 'Amp', 0, 1, valinit=0)
+        
+        
+        #samp.on_changed(self.update_slider)
+        
+        
         ax_info_t = fig.add_axes([0.02, 0.88, 0.3, 0.1])
 
         ax_client_b_p = fig.add_axes([0.02, .8, 0.05, 0.05])
         ax_client_b_n = fig.add_axes([0.22, .8, 0.05, 0.05])
-
+        
         ax_lan_b_p = fig.add_axes([0.02, .7, 0.05, 0.05])
         ax_lan_b_n = fig.add_axes([0.22, .7, 0.05, 0.05])
 
@@ -927,33 +934,27 @@ class ClientUI(object):
         ax_ss_b = fig.add_axes([0.05, 0.2, 0.19, 0.1])
 
         ax_warning_t = fig.add_axes([0.05, 0.1, 0.19, 0.1])
-
-        self.ax2 = []
-        for j in range(6):
-            ax = fig1.add_subplot(6, 1, j + 1)
-            fig1.subplots_adjust(left=0.05, right=0.3, hspace=0.3)
-            self.ax2.append(ax)
-
-
-        ax_trajectory_2d = fig1.add_axes([0.35, 0.1, 0.3, 0.8])
-
-        ax_trajectory_3d = fig1.add_axes([0.65, 0.1, 0.3, 0.8],
-                                        projection='3d')
-
+        
+        
+        ax_trajectory_2d = fig.add_axes([0.35, 0.1, 0.3, 0.8])
+        
+        ax_trajectory_3d = fig.add_axes([0.65, 0.1, 0.3, 0.8], 
+            projection='3d')
+        
         # widgets
 
         client_b_p = Button(ax_client_b_p, '<-')
         client_b_n = Button(ax_client_b_n, '->')
-
+        
         lan_b_p = Button(ax_lan_b_p, '<-')
         lan_b_n = Button(ax_lan_b_n, '->')
-
+    
         group_b_p = Button(ax_group_b_p, '<-')
         group_b_n = Button(ax_group_b_n, '->')
-
+    
         word_b_p = Button(ax_word_b_p, '<-')
         word_b_n = Button(ax_word_b_n, '->')
-
+        
         ss_b = Button(ax_ss_b, 'start/stop')
 
         client_b_p.on_clicked(self.on_prev_client)
@@ -964,20 +965,31 @@ class ClientUI(object):
 
         group_b_p.on_clicked(self.on_prev_group)
         group_b_n.on_clicked(self.on_next_group)
-
+    
         word_b_p.on_clicked(self.on_prev_word)
         word_b_n.on_clicked(self.on_next_word)
-
+    
         ss_b.on_clicked(self.on_start_stop)
-
+    
+    
         # save the reference of the widgets
-
+        
         self.fig = fig
         self.fig1 = fig1
+        
+        
+
 
         # axes
 
+        self.ax2 = []
+        for j in range(6):
 
+            ax = fig1.add_subplot(6, 1, j + 1)
+            self.ax2.append(ax)
+
+
+        
         self.ax_info_t = ax_info_t
 
         self.ax_client_b_p = ax_client_b_p
@@ -996,21 +1008,21 @@ class ClientUI(object):
         self.ax_lan_t = ax_lan_t
         self.ax_group_t = ax_group_t
         self.ax_word_t = ax_word_t
-
+        
         self.ax_label_t = ax_label_t
-
+        
         self.ax_ss_t = ax_ss_b
-
+        
         self.ax_warning_t = ax_warning_t
-
+        
         self.ax_trajectory_2d = ax_trajectory_2d
         self.ax_trajectory_3d = ax_trajectory_3d
-
+        
         # bottons
 
         self.client_b_p = client_b_p
         self.client_b_n = client_b_n
-
+        
         self.lan_b_p = lan_b_p
         self.lan_b_n = lan_b_n
 
@@ -1019,19 +1031,19 @@ class ClientUI(object):
 
         self.word_b_p = word_b_p
         self.word_b_n = word_b_n
-
+    
         self.ss_b = ss_b
-
+    
         # update widget states
-
+    
+    
         self.update_text()
+        
 
-
-
-
-
+    
     def run(self):
-        # self.fig.show()
+        
+        
         plt.show()
         
     
@@ -1050,26 +1062,28 @@ class ClientUI(object):
 
 
 if __name__ == '__main__':
-
+    
     c_leap = ClientLeap()
-
+     
     x_leap = threading.Thread(target=c_leap.run)
     x_leap.start()
 
     c_glove = ClientGlove()
-
+    
     x_glove = threading.Thread(target=c_glove.run)
     x_glove.start()
 
-
+    
+    #ui = ClientUI(c_leap, None)
+    #ui = ClientUI(None, c_glove)
     ui = ClientUI(c_leap, c_glove)
-
+    
     ui.setup_ui()
     ui.run()
-
+    
     x_leap.join(1)
     x_glove.join(1)
-
+    
     pass
 
 

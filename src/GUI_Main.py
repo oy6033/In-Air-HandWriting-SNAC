@@ -20,6 +20,7 @@ import Camera
 import GUI_Login
 import Glove
 import client_ui
+import Glove_Leap
 
 
 
@@ -80,17 +81,16 @@ class Application(object):
             self.right_part()
 
         elif self.id == '3':
-            c_leap = client_ui.ClientLeap()
-            x_leap = threading.Thread(target=c_leap.run)
-            x_leap.start()
-
-            c_glove = client_ui.ClientGlove()
-
-            x_glove = threading.Thread(target=c_glove.run)
-            x_glove.start()
-            ui = client_ui.ClientUI(c_leap, c_glove)
-            ui.setup_ui()
-
+            # c_leap = client_ui.ClientLeap()
+            # x_leap = threading.Thread(target=c_leap.run)
+            # x_leap.start()
+            #
+            # c_glove = client_ui.ClientGlove()
+            #
+            # x_glove = threading.Thread(target=c_glove.run)
+            # x_glove.start()
+            # ui = client_ui.ClientUI(c_leap, c_glove)
+            # ui.setup_ui()
 
             self.load_meta_files()
 
@@ -113,6 +113,7 @@ class Application(object):
             self.word_index = 0
 
             self.started = False
+            self.t4 = None
 
             self.info_str = 'Stopped'
 
@@ -128,19 +129,19 @@ class Application(object):
 
             # client
             client = tk.Frame(master=self.mianFram)
-            ttk.Button(master=client, text='<-', command=ui.on_prev_word).pack(fill=X, side=LEFT)
+            ttk.Button(master=client, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.client_v = StringVar()
             self.client_v.set('client 0')
             w = ttk.Combobox(master=client, state="readonly", textvariable=self.client_v, values=client_list,
                              justify='center',
                              width=37)
             w.pack(fill=X, side=LEFT)
-            ttk.Button(master=client, text='->', command=self.on_next_word).pack(fill=X, side=LEFT, expand=YES)
+            ttk.Button(master=client, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             client.pack(fill='both', expand=YES)
 
             # language
             lan = tk.Frame(master=self.mianFram)
-            ttk.Button(master=lan, text='<-', command=ui.on_prev_word).pack(fill=X, side=LEFT)
+            ttk.Button(master=lan, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.lan_v = StringVar()
             self.lan_v.set('English')
             self.lan_box = ttk.Combobox(master=lan, state="readonly", textvariable=self.lan_v, values=self.lan_list,
@@ -148,12 +149,12 @@ class Application(object):
                              width=37)
             self.lan_box.bind("<<ComboboxSelected>>", self.lan_change)
             self.lan_box.pack(fill=X, side=LEFT)
-            ttk.Button(master=lan, text='->', command=self.on_next_word).pack(fill=X, side=LEFT, expand=YES)
+            ttk.Button(master=lan, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             lan.pack(fill='both', expand=YES)
 
             # group
             group = tk.Frame(master=self.mianFram)
-            ttk.Button(master=group, text='<-', command=ui.on_prev_word).pack(fill=X, side=LEFT)
+            ttk.Button(master=group, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.group_v = StringVar()
             self.group_v.set('group 0')
             group_box = ttk.Combobox(master=group, state="readonly", textvariable=self.group_v, values=group_list,
@@ -161,13 +162,13 @@ class Application(object):
                              width=37)
             group_box.bind("<<ComboboxSelected>>", self.group_change)
             group_box.pack(fill=X, side=LEFT)
-            ttk.Button(master=group, text='->', command=self.on_next_word).pack(fill=X, side=LEFT, expand=YES)
+            ttk.Button(master=group, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             group.pack(fill='both', expand=YES)
 
             # word
             self.word_label = ['word %d' % x for x in range(100)]
             word = tk.Frame(master=self.mianFram)
-            ttk.Button(master=word, text='<-', command=self.on_prev_word).pack(fill=X, side=LEFT)
+            ttk.Button(master=word, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.word_v = StringVar()
             self.word_v.set('word %d' % 0)
             self.word_box = ttk.Combobox(master=word, state="readonly", textvariable=self.word_v, values=self.word_label,
@@ -176,8 +177,18 @@ class Application(object):
             self.word_box.bind("<<ComboboxSelected>>", self.update_text)
             self.word_box.pack(fill=X, side=LEFT)
             # w.bind("<space>", self.choose_image)
-            ttk.Button(master=word, text='->', command=self.on_next_word).pack(fill=X, side=LEFT, expand=YES)
+            ttk.Button(master=word, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             word.pack(fill='both', expand=YES)
+
+            # Label
+            self.label_v = StringVar()
+            self.label_v.set("Stopped")
+            show_label = tk.Frame(master=self.mianFram)
+            self.s = ttk.Style()
+            self.states_label = ttk.Label(master=show_label, textvariable=self.label_v, font=("Times", 28)).pack(expand=YES)
+            self.s .configure('TLabel', foreground='red')
+            show_label.pack(fill='both', expand=YES)
+
 
             # show word
             self.v = StringVar()
@@ -188,12 +199,66 @@ class Application(object):
 
             # start
             start_stop = tk.Frame(master=self.mianFram)
-            ttk.Button(master=start_stop, text='Start/Stop', command=ui.on_start_stop).pack(fill=X, side=LEFT, expand=YES)
+            start_stop_button = ttk.Button(master=start_stop, text='Start/Stop', command=lambda
+                event=None: self.glove_leap(event), takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             start_stop.pack(fill='both', expand=YES)
+            self.mianFram.bind_all('<space>', self.glove_leap)
+            self.setup_ui()
+            # ui.run()
+            # x_leap.join(1)
+            # x_glove.join(1)
 
-            ui.run()
-            x_leap.join(1)
-            x_glove.join(1)
+
+    def setup_ui(self):
+
+
+        fig1 = plt.figure()
+
+        self.ax2 = []
+        for j in range(6):
+            ax = fig1.add_subplot(6, 1, j + 1)
+            fig1.subplots_adjust(left=0.05, right=0.3, hspace=0.3)
+            self.ax2.append(ax)
+
+        ax_trajectory_2d = fig1.add_axes([0.35, 0.1, 0.3, 0.8])
+
+        ax_trajectory_3d = fig1.add_axes([0.65, 0.1, 0.3, 0.8],
+                                         projection='3d')
+        self.ax_trajectory_2d = ax_trajectory_2d
+        self.ax_trajectory_3d = ax_trajectory_3d
+
+        self.fig1 = fig1
+
+        self.fig1.show()
+
+
+
+
+    def glove_leap(self, event):
+        if(self.t4 == None or self.t4.isAlive()==False):
+            self.t4 = Glove_Leap.ClientLeap(self.fig1, self.ax_trajectory_2d, self.ax_trajectory_3d,
+                                            self.client_v.get(), self.lan_v.get(), self.word_v.get())
+            self.t4.setDaemon(True)
+            self.t4.start()
+            self.label_v.set("Started")
+            self.s .configure('TLabel', foreground='forest green')
+
+        else:
+            self.t4.stop_flag = True
+            self.t4.client_stop = True
+            self.on_next_word()
+            self.label_v.set("Stopped")
+            self.s .configure('TLabel', foreground='red')
+
+
+    def stop_camera(self, event):
+        try:
+            self.t4.stop_flag = True
+            self.t4.client_stop = True
+            self.t3.stop = 1
+        except:
+            print ("camera is not running")
+
 
     def lan_change(self,event):
         index = self.lan_v.get()
@@ -313,18 +378,18 @@ class Application(object):
         comboboxFrame.pack(fill='both', expand=YES)
 
         nextButtonFrame = tk.Frame(master=imageFrame)
-        ttk.Button(master=nextButtonFrame, text='Prev', command=self.prev_image).pack(fill=X, side=LEFT, expand=YES)
-        ttk.Button(master=nextButtonFrame, text='Next', command=self.next_image).pack(fill=X, side=LEFT, expand=YES)
+        ttk.Button(master=nextButtonFrame, text='Prev', command=self.prev_image, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
+        ttk.Button(master=nextButtonFrame, text='Next', command=self.next_image, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
         nextButtonFrame.pack(fill='both', expand=YES)
         imageFrame.pack(fill='both', expand=YES)
 
         cameraFrame = tk.Frame(master=imageFrame)
-        ttk.Button(master=cameraFrame, text='Open Camera', command=self.camera_thread).pack(fill=X, side=LEFT,
+        ttk.Button(master=cameraFrame, text='Open Camera', command=self.camera_thread, takefocus=0).pack(fill=X, side=LEFT,
                                                                                             expand=YES)
         cameraFrame.pack(fill='both', expand=YES)
 
         cameraFrame = tk.Frame(master=imageFrame)
-        ttk.Button(master=cameraFrame, text='Change Frame', command=self.change_frame).pack(fill=X, side=LEFT,
+        ttk.Button(master=cameraFrame, text='Change Frame', command=self.change_frame, takefocus=0).pack(fill=X, side=LEFT,
                                                                                             expand=YES)
         cameraFrame.pack(fill='both', expand=YES)
 
@@ -372,8 +437,8 @@ class Application(object):
 
         #buttonFrame
         buttonFrame = tk.Frame(master=inputFrame)
-        ttk.Button(master=buttonFrame, text='Draw', command=self.thread).pack(fill=X, side=LEFT, expand=YES)
-        ttk.Button(master=buttonFrame, text='Kill All', command=self.kill_all).pack(fill=X, side=LEFT, expand=YES)
+        ttk.Button(master=buttonFrame, text='Draw', command=self.thread, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
+        ttk.Button(master=buttonFrame, text='Kill All', command=self.kill_all, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
         buttonFrame.pack(fill='both', expand=YES)
 
         noteBookFrame = tk.Frame(master=inputFrame)
@@ -605,11 +670,6 @@ class Application(object):
             self.initialTimes = 0
         self.variable.set(self.OPTIONS[self.initialTimes])
 
-    def stop_camera(self, event):
-        try:
-            self.t3.stop = 1
-        except:
-            print ("camera is not running")
 
     def _quit(self):
         print ("application is closed")

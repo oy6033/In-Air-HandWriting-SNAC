@@ -32,8 +32,11 @@ from matplotlib.widgets import Button
 import threading
 import time
 
-import sys
-sys.path.insert(0, "./lib")
+import os, sys, inspect, subprocess
+import SystemChecking
+check = SystemChecking.Application()
+src_dir, arch_dir = check.system_checking()
+sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
 
 
