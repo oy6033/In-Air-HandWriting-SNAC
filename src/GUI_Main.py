@@ -129,63 +129,61 @@ class Application(object):
 
             # client
             client = tk.Frame(master=self.mianFram)
-            ttk.Button(master=client, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
+            # ttk.Button(master=client, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.client_v = StringVar()
             self.client_v.set('client 0')
             w = ttk.Combobox(master=client, state="readonly", textvariable=self.client_v, values=client_list,
-                             justify='center',
-                             width=37)
-            w.pack(fill=X, side=LEFT)
-            ttk.Button(master=client, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
+                             justify='center')
+            w.pack(fill=X, side=LEFT, expand=YES)
+            # ttk.Button(master=client, text='->', command=self.on_next_word, takefocus=0)\
+            #    .pack(fill=X, side=LEFT)
             client.pack(fill='both', expand=YES)
 
             # language
             lan = tk.Frame(master=self.mianFram)
-            ttk.Button(master=lan, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
+            # ttk.Button(master=lan, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.lan_v = StringVar()
             self.lan_v.set('English')
             self.lan_box = ttk.Combobox(master=lan, state="readonly", textvariable=self.lan_v, values=self.lan_list,
-                             justify='center',
-                             width=37)
+                             justify='center')
             self.lan_box.bind("<<ComboboxSelected>>", self.lan_change)
-            self.lan_box.pack(fill=X, side=LEFT)
-            ttk.Button(master=lan, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
+            self.lan_box.pack(fill=X, side=LEFT, expand=YES)
+            # ttk.Button(master=lan, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT)
             lan.pack(fill='both', expand=YES)
 
             # group
             group = tk.Frame(master=self.mianFram)
-            ttk.Button(master=group, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
+            # ttk.Button(master=group, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.group_v = StringVar()
             self.group_v.set('group 0')
             group_box = ttk.Combobox(master=group, state="readonly", textvariable=self.group_v, values=group_list,
-                             justify='center',
-                             width=37)
+                             justify='center')
             group_box.bind("<<ComboboxSelected>>", self.group_change)
-            group_box.pack(fill=X, side=LEFT)
-            ttk.Button(master=group, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
+            group_box.pack(fill=X, side=LEFT, expand=YES)
+            # ttk.Button(master=group, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT)
             group.pack(fill='both', expand=YES)
 
             # word
             self.word_label = ['word %d' % x for x in range(100)]
             word = tk.Frame(master=self.mianFram)
-            ttk.Button(master=word, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
+            ttk.Button(master=word, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             self.word_v = StringVar()
             self.word_v.set('word %d' % 0)
             self.word_box = ttk.Combobox(master=word, state="readonly", textvariable=self.word_v, values=self.word_label,
-                             justify='center',
-                             width=37)
+                             justify='center',width=70)
             self.word_box.bind("<<ComboboxSelected>>", self.update_text)
             self.word_box.pack(fill=X, side=LEFT)
             # w.bind("<space>", self.choose_image)
-            ttk.Button(master=word, text='->', command=self.on_next_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
-            word.pack(fill='both', expand=YES)
+            ttk.Button(master=word, text='->', command=self.on_next_word, takefocus=0,).pack(fill=X, side=LEFT, expand=YES)
+            word.pack(fill='both', expand=YES, anchor='center')
 
             # Label
             self.label_v = StringVar()
             self.label_v.set("Stopped")
             show_label = tk.Frame(master=self.mianFram)
             self.s = ttk.Style()
-            self.states_label = ttk.Label(master=show_label, textvariable=self.label_v, font=("Times", 28)).pack(expand=YES)
+            self.states_label = ttk.Label(master=show_label, textvariable=self.label_v, font=("Times", 28))\
+                .pack(expand=YES)
             self.s .configure('TLabel', foreground='red')
             show_label.pack(fill='both', expand=YES)
 
@@ -194,13 +192,13 @@ class Application(object):
             self.v = StringVar()
             self.v.set(self.word_list[0])
             show_word = tk.Frame(master=self.mianFram)
-            self.show_label = tk.Label(master=show_word, textvariable=self.v, font=("Helvetica", 28)).pack(expand=YES,)
+            self.show_label = tk.Label(master=show_word, textvariable=self.v, font=("Helvetica", 28)).pack(expand=YES)
             show_word.pack(fill='both', expand=YES)
 
             # start
             start_stop = tk.Frame(master=self.mianFram)
             start_stop_button = ttk.Button(master=start_stop, text='Start/Stop', command=lambda
-                event=None: self.glove_leap(event), takefocus=0).pack(fill=X, side=LEFT, expand=YES)
+                event=None: self.glove_leap(event), takefocus=0).pack(fill=X, side=LEFT,expand=YES)
             start_stop.pack(fill='both', expand=YES)
             self.mianFram.bind_all('<space>', self.glove_leap)
             self.setup_ui()
@@ -213,6 +211,8 @@ class Application(object):
 
 
         fig1 = plt.figure()
+
+        # fig1.canvas.mpl_connect('close_event', self.plt_close)
 
         self.ax2 = []
         for j in range(6):
@@ -229,7 +229,7 @@ class Application(object):
 
         self.fig1 = fig1
 
-        self.fig1.show()
+        fig1.show()
 
 
 
@@ -584,8 +584,16 @@ class Application(object):
             print ("no thread")
 
     def back_menu(self):
+        if self.id == '3':
+            plt.close()
         self.mianFram.destroy()
         GUI_Login.Application(self.master, self.input)
+
+    # def plt_close(self, event):
+    #     if self.id == '3':
+    #         plt.close()
+    #     self.mianFram.destroy()
+    #     GUI_Login.Application(self.master, self.input)
 
     def change_frame(self):
         tree_view_list = {}

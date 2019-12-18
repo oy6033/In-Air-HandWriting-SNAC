@@ -1067,8 +1067,8 @@ if __name__ == '__main__':
     ui.setup_ui()
     ui.run()
 
-    x_leap.join(1)
-    x_glove.join(1)
+    x_leap.join()
+    x_glove.join()
 
     pass
 

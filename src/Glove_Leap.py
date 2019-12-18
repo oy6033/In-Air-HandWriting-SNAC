@@ -183,7 +183,7 @@ class ClientLeap(threading.Thread):
                     self.bone_geo[i][j][k][0] = bone_length
                     self.bone_geo[i][j][k][1] = bone_width
 
-        self.stop_flag = True
+
         self.l = self.l - 1
         print('capture stopped')
         print("# of frames: %d, last ts: %d, out of range: %d" % \
