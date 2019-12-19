@@ -1,21 +1,13 @@
 import threading
 import os, sys, inspect, subprocess
 import numpy as np
+import serial
+import struct
 import SystemChecking
 check = SystemChecking.Application()
 src_dir, arch_dir = check.system_checking()
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
-class Application(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.leap = ClientLeap()
-        self.glove = ClientGlove()
-
-
-    def run(self):
-        self.leap.start()
-        self.glove.start()
 
 
 
@@ -339,24 +331,20 @@ class ClientLeap(threading.Thread):
             self.ax_trajectory_3d.set_ylim(-300, 300)
             self.ax_trajectory_3d.set_zlim(0, 600)
 
-
             self.fig1.canvas.draw_idle()
 
 
-
-
 class ClientGlove(threading.Thread):
-    def __init__(self):
+
+    def __init__(self, fig1, ax2, client_id, lan_str, ii):
         threading.Thread.__init__(self)
         self.stop_flag = False
         self.client_stop = False
-        self.sem = threading.Semaphore(0)
-        self.fn = './sample.csv'
-        import serial.tools.list_ports
-        port_list = list(serial.tools.list_ports.comports())
-        print(port_list[0])
-        self.ser = serial.Serial('COM3', 57600)
-
+        self.fig1 = fig1
+        self.ax2 = ax2
+        self.fn = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s_word%s') % \
+                  (lan_str, client_id.split(' ')[1], ii.split(' ')[1])
+        self.ser = serial.Serial('COM3', 115200)
         self.data = np.zeros((2000, 33), np.float32)
         self.l = 0
 
@@ -365,7 +353,6 @@ class ClientGlove(threading.Thread):
         self.fn = fn
         self.stop_flag = False
 
-        self.sem.release()
 
     def capture_stop(self):
 
@@ -374,7 +361,6 @@ class ClientGlove(threading.Thread):
     def close(self):
 
         self.client_stop = True
-        self.sem.release()
 
     def recv_payload(self, payload_len, ser):
 
@@ -387,6 +373,18 @@ class ClientGlove(threading.Thread):
         ts = np.frombuffer(payload[0:4], dtype=np.int32)[0]
 
         sample = np.frombuffer(payload[4:payload_len], dtype=np.float32)
+
+        #         print(ts)
+        #         print("  ", end="")
+        #         for j in range(16):
+        #
+        #             print("%6.2f, " % sample[j], end="")
+        #         print()
+        #         print("  ", end="")
+        #         for j in range(16, 32):
+        #
+        #             print("%6.2f, " % sample[j], end="")
+        #         print()
 
         return (ts, sample)
 
@@ -409,6 +407,7 @@ class ClientGlove(threading.Thread):
         self.ser.reset_input_buffer()
 
         while not self.stop_flag:
+
             s = self.ser.read(1)
 
             # cast the received byte to an integer
@@ -462,12 +461,31 @@ class ClientGlove(threading.Thread):
 
         np.savetxt(fn, self.data, fmt='%.8f', delimiter=', ')
 
+    def update_trajectory(self):
+        print('update signal plot')
+        data = self.data
+        l = self.l
+
+        for j in range(3):
+            ax = self.ax2[j]
+            ax.clear()
+            # ax.plot(data[:l, 0], data[:l, j + 1])
+            ax.plot(data[:l, j + 1])
+
+        for j in range(3):
+            ax = self.ax2[j + 3]
+            ax.clear()
+            # ax.plot(data[:l, 0], data[:l, j + 1])
+            ax.plot(data[:l, j + 1 + 16])
+
+        self.fig1.canvas.draw_idle()
+
     def run(self):
 
         print('client_glove started.')
 
         while not self.client_stop:
-            # self.sem.acquire()
+
             if self.client_stop:
                 break
 
@@ -477,7 +495,11 @@ class ClientGlove(threading.Thread):
 
             self.save_to_file(self.fn)
 
+        self.update_trajectory()
+
         print('client_glove closed.')
 
         self.ser.close()
+
+
 
