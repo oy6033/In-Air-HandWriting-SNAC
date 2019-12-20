@@ -236,27 +236,32 @@ class Application(object):
 
 
     def glove_leap(self, event):
-        if(self.t4 == None or self.t4.isAlive()==False):
+        ttasks = []
+        if((self.t4 == None or self.t4.isAlive() == False) and (self.t5 == None or self.t5.isAlive() == False)):
             self.t4 = Glove_Leap.ClientLeap(self.fig1, self.ax_trajectory_2d, self.ax_trajectory_3d,
                                             self.client_v.get(), self.lan_v.get(), self.word_v.get())
             self.t4.setDaemon(True)
             self.t4.start()
-
+            ttasks.append(self.t4)
             self.t5 = Glove_Leap.ClientGlove(self.fig1, self.ax2,self.client_v.get(), self.lan_v.get(), self.word_v.get())
             self.t5.setDaemon(True)
             self.t5.start()
-
+            ttasks.append(self.t5)
             self.label_v.set("Started")
-            self.s .configure('TLabel', foreground='forest green')
+            self.s.configure('TLabel', foreground='forest green')
 
         else:
             self.t4.stop_flag = True
             self.t4.client_stop = True
             self.t5.stop_flag = True
             self.t5.client_stop = True
+            for ttask in ttasks:
+                ttask.join()
             self.on_next_word()
             self.label_v.set("Stopped")
             self.s .configure('TLabel', foreground='red')
+
+
 
 
     def stop_camera(self, event):
