@@ -22,7 +22,7 @@ Make standalone application:
 
 
 Run command to build package in pyinstaller:\
-``` pyinstaller -F 'GUI_Login.py' --hidden-import='PIL._tkinter_finder'```
+``` pyinstaller -F src\GUI_Login.py --hidden-import='PIL._tkinter_finder'```
 
 Run command to build package in py2app:\
 ``` python setup.py py2app --package=PIL,cv2```

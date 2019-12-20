@@ -243,7 +243,7 @@ class Application(object):
             self.t4.setDaemon(True)
             self.t4.start()
             ttasks.append(self.t4)
-            self.t5 = Glove_Leap.ClientGlove(self.fig1, self.ax2,self.client_v.get(), self.lan_v.get(), self.word_v.get())
+            self.t5 = Glove_Leap.ClientGlove(self.fig1, self.ax2, self.client_v.get(), self.lan_v.get(), self.word_v.get())
             self.t5.setDaemon(True)
             self.t5.start()
             ttasks.append(self.t5)

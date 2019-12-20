@@ -344,7 +344,10 @@ class ClientGlove(threading.Thread):
         self.ax2 = ax2
         self.fn = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s_word%s') % \
                   (lan_str, client_id.split(' ')[1], ii.split(' ')[1])
-        self.ser = serial.Serial('COM3', 115200)
+        import serial.tools.list_ports
+        port_list = list(serial.tools.list_ports.comports())
+        print(port_list[0])
+        self.ser = serial.Serial(str(port_list[0]).split(' - ')[0], 115200)
         self.data = np.zeros((2000, 33), np.float32)
         self.l = 0
 
