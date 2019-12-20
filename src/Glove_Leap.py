@@ -336,7 +336,7 @@ class ClientLeap(threading.Thread):
 
 class ClientGlove(threading.Thread):
 
-    def __init__(self, fig1, ax2, client_id, lan_str, ii):
+    def __init__(self, fig1, ax2, client_id, lan_str, ii, port):
         threading.Thread.__init__(self)
         self.stop_flag = False
         self.client_stop = False
@@ -344,10 +344,8 @@ class ClientGlove(threading.Thread):
         self.ax2 = ax2
         self.fn = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s_word%s') % \
                   (lan_str, client_id.split(' ')[1], ii.split(' ')[1])
-        import serial.tools.list_ports
-        port_list = list(serial.tools.list_ports.comports())
-        print(port_list[0])
-        self.ser = serial.Serial(str(port_list[0]).split(' - ')[0], 115200)
+
+        self.ser = serial.Serial(port, 115200)
         self.data = np.zeros((2000, 33), np.float32)
         self.l = 0
 
