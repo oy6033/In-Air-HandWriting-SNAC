@@ -203,9 +203,30 @@ class Application(object):
             start_stop.pack(fill='both', expand=YES)
             self.mianFram.bind_all('<space>', self.glove_leap)
             self.setup_ui()
-            # ui.run()
-            # x_leap.join(1)
-            # x_glove.join(1)
+
+            # noteBookFrame = tk.Frame(master=self.mianFram)
+            # self.notebook = ttk.Notebook(master=noteBookFrame)
+            # self.log = tk.Text(master=self.notebook)
+            # # TreeView
+            # self.file = ttk.Treeview(master=self.notebook, columns=("A", "B"))
+            # self.file.heading("#0", text='Item')
+            # self.file.heading("#1", text='Max Times')
+            # self.file.heading("#2", text='Modification Date')
+            # self.file.column('#0', anchor="c", stretch=tk.YES)
+            # self.file.column("#1", anchor="c", stretch=tk.YES)
+            # self.file.column('#2', anchor="c", stretch=tk.YES)
+            # self.file.bind('<Double-1>', self.open_file)
+            # # Menu
+            # self.menu = tk.Menu(self.file, tearoff=0)
+            # self.menu.add_command(label="open", command=self.open_file_menu)
+            # self.menu.add_separator()
+            # self.menu.add_command(label="delete", command=self.delete_file)
+            # self.file.bind('<Button-3>', self.show_menu)
+            # self.notebook.add(self.log, text="Output")
+            # self.notebook.add(self.file, text="File")
+            # self.notebook.pack(fill='both', expand=YES)
+            # noteBookFrame.pack(fill='both', expand=YES)
+
 
 
     def setup_ui(self):

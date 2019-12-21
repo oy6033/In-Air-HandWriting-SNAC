@@ -1,3 +1,5 @@
+# -*- coding: utf-8
+import string
 from tkinter import *
 from tkinter import ttk
 import GUI_Main
