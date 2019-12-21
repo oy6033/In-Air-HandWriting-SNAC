@@ -1,3 +1,4 @@
+import datetime
 import threading
 import os, sys, inspect, subprocess
 import numpy as np
@@ -9,13 +10,27 @@ src_dir, arch_dir = check.system_checking()
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
 
+class text():
+    def __init__(self, log):
+        self.log = log
+
+    def message(self, message_name, message, start, end, color, underline, is_open):
+        if is_open == False:
+            self.log.insert('1.0', message)
+        else:
+            self.log.insert('1.0', message)
+            self.log.tag_add(message_name, '1.' + str(start), '1.' + str(end))
+            self.log.tag_config(message_name, foreground=color, underline=underline)
+
+
 
 
 class ClientLeap(threading.Thread):
 
-    def __init__(self, fig1, ax_trajectory_2d, ax_trajectory_3d, client_id, lan_str, ii):
+    def __init__(self, fig1, ax_trajectory_2d, ax_trajectory_3d, client_id, lan_str, ii, log, file):
         threading.Thread.__init__(self)
-
+        self.log = log
+        self.file = file
         N = 2000
         self.N = N
         self.ltss = np.zeros((N, 1), np.float64)
@@ -306,6 +321,18 @@ class ClientLeap(threading.Thread):
 
         print('client_leap closed.')
 
+        message = self.fn + " has been saved successfully\n"
+        Text = text(self.log)
+        Text.message('filesave', message, 0, len(message), 'purple', False, True)
+
+        message = 'client_leap closed\n'
+        Text.message('plotcompleted', message, 0, len(message), 'orange', False, False)
+
+        if (self.file.exists(self.fn)):
+            self.file.delete(self.fn)
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(1), str(datetime.datetime.now())[:-7]))
+        else:
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(1), str(datetime.datetime.now())[:-7]))
 
 
     def update_trajectory(self):
@@ -336,8 +363,10 @@ class ClientLeap(threading.Thread):
 
 class ClientGlove(threading.Thread):
 
-    def __init__(self, fig1, ax2, client_id, lan_str, ii, port):
+    def __init__(self, fig1, ax2, client_id, lan_str, ii, port, log, file):
         threading.Thread.__init__(self)
+        self.log = log
+        self.file = file
         self.stop_flag = False
         self.client_stop = False
         self.fig1 = fig1
@@ -501,6 +530,18 @@ class ClientGlove(threading.Thread):
         print('client_glove closed.')
 
         self.ser.close()
+        message = self.fn + " has been saved successfully\n"
+        Text = text(self.log)
+        Text.message('filesave', message, 0, len(message), 'purple', False, True)
+
+        message = 'client_glove closed\n'
+        Text.message('plotcompleted', message, 0, len(message), 'orange', False, False)
+
+        if (self.file.exists(self.fn)):
+            self.file.delete(self.fn)
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(1), str(datetime.datetime.now())[:-7]))
+        else:
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(1), str(datetime.datetime.now())[:-7]))
 
 
 

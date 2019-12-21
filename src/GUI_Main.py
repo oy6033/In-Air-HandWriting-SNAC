@@ -40,7 +40,7 @@ class Application(object):
         self.master.protocol("WM_DELETE_WINDOW", self.back_menu)
         self.input = input
 
-    def createWidgets(self, w=1180, h=800):
+    def createWidgets(self, w=800, h=800):
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
         x = (ws / 2) - (w / 2)
@@ -204,28 +204,28 @@ class Application(object):
             self.mianFram.bind_all('<space>', self.glove_leap)
             self.setup_ui()
 
-            # noteBookFrame = tk.Frame(master=self.mianFram)
-            # self.notebook = ttk.Notebook(master=noteBookFrame)
-            # self.log = tk.Text(master=self.notebook)
-            # # TreeView
-            # self.file = ttk.Treeview(master=self.notebook, columns=("A", "B"))
-            # self.file.heading("#0", text='Item')
-            # self.file.heading("#1", text='Max Times')
-            # self.file.heading("#2", text='Modification Date')
-            # self.file.column('#0', anchor="c", stretch=tk.YES)
-            # self.file.column("#1", anchor="c", stretch=tk.YES)
-            # self.file.column('#2', anchor="c", stretch=tk.YES)
-            # self.file.bind('<Double-1>', self.open_file)
-            # # Menu
-            # self.menu = tk.Menu(self.file, tearoff=0)
-            # self.menu.add_command(label="open", command=self.open_file_menu)
-            # self.menu.add_separator()
-            # self.menu.add_command(label="delete", command=self.delete_file)
-            # self.file.bind('<Button-3>', self.show_menu)
-            # self.notebook.add(self.log, text="Output")
-            # self.notebook.add(self.file, text="File")
-            # self.notebook.pack(fill='both', expand=YES)
-            # noteBookFrame.pack(fill='both', expand=YES)
+            noteBookFrame = tk.Frame(master=self.mianFram)
+            self.notebook = ttk.Notebook(master=noteBookFrame)
+            self.log = tk.Text(master=self.notebook,height=5)
+            # TreeView
+            self.file = ttk.Treeview(master=self.notebook, columns=("A", "B"), height=5)
+            self.file.heading("#0", text='Item')
+            self.file.heading("#1", text='Max Times')
+            self.file.heading("#2", text='Modification Date')
+            self.file.column('#0', anchor="c", stretch=tk.YES)
+            self.file.column("#1", anchor="c", stretch=tk.YES)
+            self.file.column('#2', anchor="c", stretch=tk.YES)
+            self.file.bind('<Double-1>', self.open_file)
+            # Menu
+            self.menu = tk.Menu(self.file, tearoff=0)
+            self.menu.add_command(label="open", command=self.open_file_menu)
+            self.menu.add_separator()
+            self.menu.add_command(label="delete", command=self.delete_file)
+            self.file.bind('<Button-3>', self.show_menu)
+            self.notebook.add(self.log, text="Output")
+            self.notebook.add(self.file, text="File")
+            self.notebook.pack(fill='both', expand=YES)
+            noteBookFrame.pack(fill='both', expand=YES)
 
 
 
@@ -260,12 +260,12 @@ class Application(object):
         ttasks = []
         if((self.t4 == None or self.t4.isAlive() == False) and (self.t5 == None or self.t5.isAlive() == False)):
             self.t4 = Glove_Leap.ClientLeap(self.fig1, self.ax_trajectory_2d, self.ax_trajectory_3d,
-                                            self.client_v.get(), self.lan_v.get(), self.word_v.get())
+                                            self.client_v.get(), self.lan_v.get(), self.word_v.get(), self.log, self.file)
             self.t4.setDaemon(True)
             self.t4.start()
             ttasks.append(self.t4)
             self.t5 = Glove_Leap.ClientGlove(self.fig1, self.ax2, self.client_v.get(),
-                                             self.lan_v.get(), self.word_v.get(), self.input)
+                                             self.lan_v.get(), self.word_v.get(), self.input, self.log, self.file)
             self.t5.setDaemon(True)
             self.t5.start()
             ttasks.append(self.t5)
