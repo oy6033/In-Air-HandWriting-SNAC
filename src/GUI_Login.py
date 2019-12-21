@@ -58,6 +58,10 @@ class Application(object):
 
 
 if __name__ == '__main__':
+
+
+
+
     input = None
     try:
         input = sys.argv[1]

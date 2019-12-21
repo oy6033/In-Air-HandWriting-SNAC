@@ -1,4 +1,5 @@
 import datetime
+import time
 import threading
 import os, sys, inspect, subprocess
 import numpy as np
@@ -113,7 +114,7 @@ class ClientLeap(threading.Thread):
             else:
                 frame_id = frame.id
 
-            if i >= N:
+            if i >= N - 1:
                 self.l = N
                 break
             else:
@@ -124,6 +125,7 @@ class ClientLeap(threading.Thread):
             #    frame.id - init_frame.id, (frame.timestamp - init_frame.timestamp) / 1000, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
             # print(frame_str)
 
+            self.ltss[i] = time.time()
             self.tss[i] = frame.timestamp
             self.valids[i] = 1
 
@@ -250,6 +252,7 @@ class ClientLeap(threading.Thread):
             confidence = self.confs[i]
             valid = self.valids[i]
             ts = self.tss[i]
+            ltss = self.ltss[i]
 
             # tip contains three positions and three orientations of the finger tip
             tip_str = "%8.04f, %8.04f, %8.04f, %8.04f, %8.04f, %8.04f" % tip
@@ -277,6 +280,8 @@ class ClientLeap(threading.Thread):
                     bgeo_str = "%8.04f, %8.04f" % bgeo
                     bgeo_strs.append(bgeo_str)
 
+            fd.write('%f' % ltss)
+            fd.write(',\t')
             fd.write('%d' % ts)
             fd.write(',\t')
             fd.write(tip_str)
@@ -374,8 +379,10 @@ class ClientGlove(threading.Thread):
         self.fn = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s_word%s') % \
                   (lan_str, client_id.split(' ')[1], ii.split(' ')[1])
 
+        self.N = 5000
+
         self.ser = serial.Serial(port, 115200)
-        self.data = np.zeros((2000, 33), np.float32)
+        self.data = np.zeros((self.N, 34), np.float32)
         self.l = 0
 
     def capture_start(self, fn):
@@ -420,7 +427,7 @@ class ClientGlove(threading.Thread):
 
     def capture(self):
 
-        N = 2000
+        N = self.N
 
         # 0 ---> initial state, expecting magic1 (character 'D', decimal 68, hex 0x44)
         # 1 ---> after magic1 is received, expecting magic2 (character 'L', decimal 76, hex 0x4C)
@@ -429,7 +436,7 @@ class ClientGlove(threading.Thread):
 
         state = 0
 
-        self.data = np.zeros((N, 33), np.float32)
+        self.data = np.zeros((N, 34), np.float32)
 
         i = 0
         msg_len = 0
@@ -470,8 +477,9 @@ class ClientGlove(threading.Thread):
                 # if c == 133:
 
                 ts, sample = self.recv_payload(132, self.ser)
-                self.data[i, 0] = ts
-                self.data[i, 1:] = sample
+                self.data[i, 0] = time.time()
+                self.data[i, 1] = ts
+                self.data[i, 2:] = sample
 
                 i += 1
                 self.l = i
@@ -500,13 +508,13 @@ class ClientGlove(threading.Thread):
             ax = self.ax2[j]
             ax.clear()
             # ax.plot(data[:l, 0], data[:l, j + 1])
-            ax.plot(data[:l, j + 1])
+            ax.plot(data[:l, j + 2])
 
         for j in range(3):
             ax = self.ax2[j + 3]
             ax.clear()
             # ax.plot(data[:l, 0], data[:l, j + 1])
-            ax.plot(data[:l, j + 1 + 16])
+            ax.plot(data[:l, j + 2 + 16])
 
         self.fig1.canvas.draw_idle()
 
