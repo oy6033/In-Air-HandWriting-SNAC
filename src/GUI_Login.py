@@ -64,7 +64,7 @@ if __name__ == '__main__':
     except:
         import serial.tools.list_ports
         port_list = list(serial.tools.list_ports.comports())
-        input = str(port_list[0]).split(' - ')[0]
+        input = str(port_list[0]).decode('UTF-8').split(' - ')[0]
         print ("ports: " + input)
     root = Tk()
     root.title("In-Air Hand Writing")
