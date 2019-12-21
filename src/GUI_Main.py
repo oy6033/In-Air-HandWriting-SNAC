@@ -259,11 +259,16 @@ class Application(object):
     def glove_leap(self, event):
         ttasks = []
         if((self.t4 == None or self.t4.isAlive() == False) and (self.t5 == None or self.t5.isAlive() == False)):
+            message = 'client_leap started\n'
+            self.message('start_leap', message, 0, len(message), 'forest green', False, True)
             self.t4 = Glove_Leap.ClientLeap(self.fig1, self.ax_trajectory_2d, self.ax_trajectory_3d,
                                             self.client_v.get(), self.lan_v.get(), self.word_v.get(), self.log, self.file)
             self.t4.setDaemon(True)
             self.t4.start()
             ttasks.append(self.t4)
+            message = 'client_glove started\n'
+            self.message('start_glove', message, 0, len(message), 'forest green', False, True)
+            # self.log.insert('1.0', "client_glove started\n")
             self.t5 = Glove_Leap.ClientGlove(self.fig1, self.ax2, self.client_v.get(),
                                              self.lan_v.get(), self.word_v.get(), self.input, self.log, self.file)
             self.t5.setDaemon(True)

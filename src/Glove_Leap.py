@@ -328,10 +328,10 @@ class ClientLeap(threading.Thread):
 
         message = self.fn + " has been saved successfully\n"
         Text = text(self.log)
-        Text.message('filesave', message, 0, len(message), 'purple', False, True)
+        Text.message('filesave', message, 0, len(message), 'purple', False, False)
 
         message = 'client_leap closed\n'
-        Text.message('plotcompleted', message, 0, len(message), 'orange', False, False)
+        Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
 
         if (self.file.exists(self.fn)):
             self.file.delete(self.fn)
@@ -540,10 +540,10 @@ class ClientGlove(threading.Thread):
         self.ser.close()
         message = self.fn + " has been saved successfully\n"
         Text = text(self.log)
-        Text.message('filesave', message, 0, len(message), 'purple', False, True)
+        Text.message('filesave', message, 0, len(message), 'purple', False, False)
 
         message = 'client_glove closed\n'
-        Text.message('plotcompleted', message, 0, len(message), 'orange', False, False)
+        Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
 
         if (self.file.exists(self.fn)):
             self.file.delete(self.fn)
