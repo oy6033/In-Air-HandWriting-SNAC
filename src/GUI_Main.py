@@ -210,7 +210,7 @@ class Application(object):
             # TreeView
             self.file = ttk.Treeview(master=self.notebook, columns=("A", "B"), height=5)
             self.file.heading("#0", text='Item')
-            self.file.heading("#1", text='Max Times')
+            self.file.heading("#1", text='Floder')
             self.file.heading("#2", text='Modification Date')
             self.file.column('#0', anchor="c", stretch=tk.YES)
             self.file.column("#1", anchor="c", stretch=tk.YES)
@@ -279,6 +279,11 @@ class Application(object):
             self.t5.client_stop = True
             for ttask in ttasks:
                 ttask.join()
+            while(1):
+                if self.t5.isAlive() == True or self.t4.isAlive() == True:
+                    pass
+                else:
+                    break
             self.on_next_word()
             self.label_v.set("Stopped")
             self.s .configure('TLabel', foreground='red')

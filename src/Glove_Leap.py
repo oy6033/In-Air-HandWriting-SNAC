@@ -330,9 +330,9 @@ class ClientLeap(threading.Thread):
 
         if (self.file.exists(self.fn)):
             self.file.delete(self.fn)
-            self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(1), str(datetime.datetime.now())[:-7]))
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
         else:
-            self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(1), str(datetime.datetime.now())[:-7]))
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
 
 
     def update_trajectory(self):
@@ -539,9 +539,9 @@ class ClientGlove(threading.Thread):
 
         if (self.file.exists(self.fn)):
             self.file.delete(self.fn)
-            self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(1), str(datetime.datetime.now())[:-7]))
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
         else:
-            self.file.insert('', 0, text=self.fn, iid=self.fn, values=(str(1), str(datetime.datetime.now())[:-7]))
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
 
 
 
