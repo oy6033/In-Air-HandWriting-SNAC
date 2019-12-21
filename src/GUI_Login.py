@@ -76,7 +76,7 @@ if __name__ == '__main__':
             line = fp.readline()
             cnt = 1
             while line:
-                config_list = line.split(':')
+                config_list = line.strip().split(':')
                 map[config_list[0]] = config_list[1]
                 line = fp.readline()
                 cnt += 1
