@@ -64,12 +64,27 @@ if __name__ == '__main__':
 
     input = None
     try:
-        input = sys.argv[1]
-    except:
+
         import serial.tools.list_ports
         port_list = list(serial.tools.list_ports.comports())
-        input = str(port_list[0]).decode('UTF-8').split(' - ')[0]
-        print ("ports: " + input)
+        for port in port_list:
+            print port
+
+        filepath = "../meta/config.txt"
+        map = {}
+        with open(filepath) as fp:
+            line = fp.readline()
+            cnt = 1
+            while line:
+                config_list = line.split(':')
+                map[config_list[0]] = config_list[1]
+                line = fp.readline()
+                cnt += 1
+        input = map['port']
+
+    except:
+        print ("port error")
+        # print ("ports: " + input)
     root = Tk()
     root.title("In-Air Hand Writing")
     display = Application(root, input)
