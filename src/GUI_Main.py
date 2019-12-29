@@ -19,8 +19,8 @@ import LeapMotion
 import Camera
 import GUI_Login
 import Glove
-import client_ui
 import Glove_Leap
+import serial
 
 
 
@@ -167,15 +167,19 @@ class Application(object):
             # word
             self.word_label = ['word %d' % x for x in range(100)]
             word = tk.Frame(master=self.mianFram)
-            ttk.Button(master=word, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT, expand=YES)
+            ttk.Button(master=word, text='<-', command=lambda
+                event=None: self.on_prev_word(event), takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             self.word_v = StringVar()
             self.word_v.set('word %d' % 0)
             self.word_box = ttk.Combobox(master=word, state="readonly", textvariable=self.word_v, values=self.word_label,
                              justify='center',width=70)
             self.word_box.bind("<<ComboboxSelected>>", self.update_text)
+            self.word_box.bind_all('a', self.on_prev_word)
+            self.word_box.bind_all('d', self.on_next_word)
             self.word_box.pack(fill=X, side=LEFT)
             # w.bind("<space>", self.choose_image)
-            ttk.Button(master=word, text='->', command=self.on_next_word, takefocus=0,).pack(fill=X, side=LEFT, expand=YES)
+            ttk.Button(master=word, text='->', command=lambda
+                event=None: self.on_next_word(event), takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             word.pack(fill='both', expand=YES, anchor='center')
 
             # Label
@@ -255,27 +259,35 @@ class Application(object):
 
 
 
-
     def glove_leap(self, event):
         ttasks = []
-        if((self.t4 == None or self.t4.isAlive() == False) and (self.t5 == None or self.t5.isAlive() == False)):
-            message = 'client_leap started\n'
-            self.message('start_leap', message, 0, len(message), 'forest green', False, True)
-            self.t4 = Glove_Leap.ClientLeap(self.fig1, self.ax_trajectory_2d, self.ax_trajectory_3d,
-                                            self.client_v.get(), self.lan_v.get(), self.word_v.get(), self.log, self.file)
-            self.t4.setDaemon(True)
-            self.t4.start()
-            ttasks.append(self.t4)
-            message = 'client_glove started\n'
-            self.message('start_glove', message, 0, len(message), 'forest green', False, True)
-            # self.log.insert('1.0', "client_glove started\n")
-            self.t5 = Glove_Leap.ClientGlove(self.fig1, self.ax2, self.client_v.get(),
-                                             self.lan_v.get(), self.word_v.get(), self.input, self.log, self.file)
-            self.t5.setDaemon(True)
-            self.t5.start()
-            ttasks.append(self.t5)
-            self.label_v.set("Started")
-            self.s.configure('TLabel', foreground='forest green')
+
+        if ((self.t4 == None or self.t4.isAlive() == False) and (self.t5 == None or self.t5.isAlive() == False)):
+            try:
+                self.t4 = Glove_Leap.ClientLeap(self.fig1, self.ax_trajectory_2d, self.ax_trajectory_3d,
+                                                    self.client_v.get(), self.lan_v.get(), self.word_v.get(), self.log,
+                                                    self.file)
+                self.t5 = Glove_Leap.ClientGlove(self.fig1, self.ax2, self.client_v.get(),
+                                                 self.lan_v.get(), self.word_v.get(), self.input, self.log, self.file,
+                                                 self.t4)
+                self.t4.setDaemon(True)
+                self.t4.start()
+                ttasks.append(self.t4)
+                self.t5.setDaemon(True)
+                self.t5.start()
+                ttasks.append(self.t5)
+                message = 'client_leap started\n'
+                self.message('start_leap', message, 0, len(message), 'forest green', False, True)
+                message = 'client_glove started\n'
+                self.message('start_glove', message, 0, len(message), 'forest green', False, True)
+                self.label_v.set("Started")
+                self.s.configure('TLabel', foreground='forest green')
+            except:
+                message = 'leap or glove is disconnected\n'
+                self.message('error', message, 0, len(message), 'red', False, True)
+                print "error"
+
+
 
         else:
             self.t4.stop_flag = True
@@ -284,14 +296,16 @@ class Application(object):
             self.t5.client_stop = True
             for ttask in ttasks:
                 ttask.join()
-            while(1):
+            while (1):
                 if self.t5.isAlive() == True or self.t4.isAlive() == True:
                     pass
                 else:
                     break
-            self.on_next_word()
+            self.on_next_word(event=None)
             self.label_v.set("Stopped")
-            self.s .configure('TLabel', foreground='red')
+            self.s.configure('TLabel', foreground='red')
+
+
 
 
 
@@ -354,7 +368,7 @@ class Application(object):
         self.words_chs = words_chs
 
 
-    def on_prev_word(self):
+    def on_prev_word(self, event):
         index = int(self.group_v.get().split(' ')[1])
         self.warning_str = ''
         if self.word_index > index * 100:
@@ -362,7 +376,9 @@ class Application(object):
             self.word_index = self.word_index - 1
 
         else:
-            self.warning_str = 'This is the first word.'
+            self.warning_str = 'This is the first word.\n'
+            self.message('firstWord', self.warning_str, 0, len(self.warning_str), 'red', False, True)
+
             print (self.warning_str)
 
 
@@ -372,7 +388,7 @@ class Application(object):
         print(self.word_index)
         # self.update_text()
 
-    def on_next_word(self):
+    def on_next_word(self, event):
 
         self.warning_str = ''
 
@@ -381,7 +397,8 @@ class Application(object):
             self.word_index = self.word_index + 1
 
         else:
-            self.warning_str = 'This is the last word.'
+            self.warning_str = 'This is the last word.\n'
+            self.message('lastWord', self.warning_str, 0, len(self.warning_str), 'red', False, True)
             print (self.warning_str)
 
         self.v.set(self.word_list[self.word_index])

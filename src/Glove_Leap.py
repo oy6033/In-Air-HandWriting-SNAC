@@ -4,7 +4,7 @@ import threading
 import os, sys, inspect, subprocess
 import numpy as np
 import serial
-import struct
+import GUI_Main
 import SystemChecking
 check = SystemChecking.Application()
 src_dir, arch_dir = check.system_checking()
@@ -368,22 +368,24 @@ class ClientLeap(threading.Thread):
 
 class ClientGlove(threading.Thread):
 
-    def __init__(self, fig1, ax2, client_id, lan_str, ii, port, log, file):
+    def __init__(self, fig1, ax2, client_id, lan_str, ii, port, log, file, t4):
         threading.Thread.__init__(self)
         self.log = log
         self.file = file
         self.stop_flag = False
         self.client_stop = False
+        self.t4 = t4
         self.fig1 = fig1
         self.ax2 = ax2
         self.fn = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s_word%s') % \
                   (lan_str, client_id.split(' ')[1], ii.split(' ')[1])
 
         self.N = 5000
-
         self.ser = serial.Serial(port, 115200)
         self.data = np.zeros((self.N, 34), np.float32)
         self.l = 0
+
+
 
     def capture_start(self, fn):
 
@@ -537,11 +539,14 @@ class ClientGlove(threading.Thread):
 
         print('client_glove closed.')
 
-        self.ser.close()
+        try:
+            self.ser.close()
+        except:
+            print "no serial"
+
         message = self.fn + " has been saved successfully\n"
         Text = text(self.log)
         Text.message('filesave', message, 0, len(message), 'purple', False, False)
-
         message = 'client_glove closed\n'
         Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
 
