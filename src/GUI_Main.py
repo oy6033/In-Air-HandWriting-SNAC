@@ -48,8 +48,8 @@ class Application(object):
         self.master.geometry('%dx%d+%d+%d' % (w, h, x, y))
         self.mianFram = Frame(master=self.master)
         self.mianFram.pack(fill='both', expand=YES)
-        self.mianFram.bind_all('<Escape>', self.stop_camera)
-        self.mianFram.bind_all('<Return>', self.push_enter)
+        # self.mianFram.bind_all('<Escape>', self.stop_camera)
+        # self.mianFram.bind_all('<Return>', self.push_enter)
 
         # Graph Right
         if self.id == '1':
@@ -174,8 +174,8 @@ class Application(object):
             self.word_box = ttk.Combobox(master=word, state="readonly", textvariable=self.word_v, values=self.word_label,
                              justify='center',width=70)
             self.word_box.bind("<<ComboboxSelected>>", self.update_text)
-            self.word_box.bind_all('a', self.on_prev_word)
-            self.word_box.bind_all('d', self.on_next_word)
+            # self.word_box.bind_all('a', self.on_prev_word)
+            # self.word_box.bind_all('d', self.on_next_word)
             self.word_box.pack(fill=X, side=LEFT)
             # w.bind("<space>", self.choose_image)
             ttk.Button(master=word, text='->', command=lambda
@@ -496,7 +496,7 @@ class Application(object):
         suffixFrame.pack(fill='both', expand=YES)
 
         dropListFrame = tk.Frame(master=inputFrame)
-        dropListFrame.bind('<Return>', self.push_enter)
+        # dropListFrame.bind('<Return>', self.push_enter)
         self.OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
         self.initialTimes = 0
         self.variable = StringVar(master=dropListFrame)
