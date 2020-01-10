@@ -376,11 +376,11 @@ class ClientLeap(threading.Thread):
         # message = 'client_leap closed\n'
         # Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
         #
-        # if (self.file.exists(self.fn)):
-        #     self.file.delete(self.fn)
-        #     self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
-        # else:
-        #     self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
+        if (self.file.exists(self.fn)):
+            self.file.delete(self.fn)
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
+        else:
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
 
 
     def update_trajectory(self):
@@ -616,11 +616,11 @@ class ClientGlove(threading.Thread):
         # message = 'client_glove closed\n'
         # Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
         #
-        # if (self.file.exists(self.fn)):
-        #     self.file.delete(self.fn)
-        #     self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
-        # else:
-        #     self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
+        if (self.file.exists(self.fn)):
+            self.file.delete(self.fn)
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
+        else:
+            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
 
 
 

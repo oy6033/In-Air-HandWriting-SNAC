@@ -618,7 +618,6 @@ class Application(object):
             item = self.file.selection()[0]
             fn = self.file.item(item, 'text')
             print (fn)
-
             if 'linux' in str(sys.platform):
                 if fn[-4:] == '.txt':
                     subprocess.call(('xdg-open', self.data_path + fn))
