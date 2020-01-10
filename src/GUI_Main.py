@@ -28,11 +28,12 @@ import serial
 
 class Application(object):
 
-    def __init__(self, master=None, id=None, input=None, data_path=None, video_path=None, temp_path =None):
+    def __init__(self, master=None, id=None, input=None, data_path=None, video_path=None, temp_path =None, client_id=None):
         self.master = master
         self.maxtimes = 5
         self.id = id
         self.master.title("In-Air Hand Writing")
+        self.client_id = client_id
         self.createWidgets()
         self.data_path = data_path
         self.video_path = video_path
@@ -95,7 +96,6 @@ class Application(object):
             self.load_meta_files()
 
             self.nr_clients = 10
-            self.client_id = 0
 
             self.lan_list = ['English', 'Chinese']
             self.lan_index = 0
@@ -132,8 +132,8 @@ class Application(object):
             client = tk.Frame(master=self.mianFram)
             # ttk.Button(master=client, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.client_v = StringVar()
-            self.client_v.set('client 0')
-            w = ttk.Combobox(master=client, state="readonly", textvariable=self.client_v, values=client_list,
+            self.client_v.set('client '+self.client_id)
+            w = ttk.Combobox(master=client, state="disabled", textvariable=self.client_v, values=client_list,
                              justify='center')
             w.pack(fill=X, side=LEFT, expand=YES)
             # ttk.Button(master=client, text='->', command=self.on_next_word, takefocus=0)\
