@@ -123,7 +123,7 @@ class Application(object):
             # self.ii = self.group_index * self.group_size + self.word_index
 
 
-            client_list = ['client %d' % x for x in range(10)]
+            client_list = ['client %d' % x for x in range(20)]
             group_list = ['group %d' % x for x in range(100)]
 
 
@@ -266,10 +266,10 @@ class Application(object):
             try:
                 self.t4 = Glove_Leap.ClientLeap(self.fig1, self.ax_trajectory_2d, self.ax_trajectory_3d,
                                                     self.client_v.get(), self.lan_v.get(), self.word_v.get(), self.log,
-                                                    self.file)
+                                                    self.file, self.group_v.get())
                 self.t5 = Glove_Leap.ClientGlove(self.fig1, self.ax2, self.client_v.get(),
                                                  self.lan_v.get(), self.word_v.get(), self.input, self.log, self.file,
-                                                 self.t4)
+                                                 self.t4, self.group_v.get())
                 self.t4.setDaemon(True)
                 self.t4.start()
                 ttasks.append(self.t4)
@@ -282,11 +282,11 @@ class Application(object):
                 self.message('start_glove', message, 0, len(message), 'forest green', False, True)
                 self.label_v.set("Started")
                 self.s.configure('TLabel', foreground='forest green')
+
             except:
                 message = 'leap or glove is disconnected\n'
                 self.message('error', message, 0, len(message), 'red', False, True)
                 print "error"
-
 
 
         else:
@@ -294,14 +294,33 @@ class Application(object):
             self.t4.client_stop = True
             self.t5.stop_flag = True
             self.t5.client_stop = True
+
+
             for ttask in ttasks:
                 ttask.join()
+
             while (1):
                 if self.t5.isAlive() == True or self.t4.isAlive() == True:
                     pass
                 else:
+                    self.warning_str = "leap and glove are closed\n"
+                    self.message('error', self.warning_str, 0, len(self.warning_str), 'red', False, True)
                     break
-            self.on_next_word(event=None)
+
+
+            good1, error_str = self.t4.check_sanity()
+            if not good1:
+                self.warning_str = error_str
+                self.message('error', self.warning_str+'\n', 0, len(self.warning_str), 'red', False, True)
+                print self.warning_str
+
+            good2, error_str = self.t5.check_sanity()
+            if not good2:
+                self.warning_str = error_str
+                self.message('error', self.warning_str+'\n', 0, len(self.warning_str), 'red', False, True)
+                print self.warning_str
+            if good1 and good2:
+                self.on_next_word(event=None)
             self.label_v.set("Stopped")
             self.s.configure('TLabel', foreground='red')
 

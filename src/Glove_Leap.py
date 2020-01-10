@@ -28,7 +28,7 @@ class text():
 
 class ClientLeap(threading.Thread):
 
-    def __init__(self, fig1, ax_trajectory_2d, ax_trajectory_3d, client_id, lan_str, ii, log, file):
+    def __init__(self, fig1, ax_trajectory_2d, ax_trajectory_3d, client_id, lan_str, ii, log, file, group_id):
         threading.Thread.__init__(self)
         self.log = log
         self.file = file
@@ -58,8 +58,15 @@ class ClientLeap(threading.Thread):
         self.ax_trajectory_2d = ax_trajectory_2d
         self.ax_trajectory_3d = ax_trajectory_3d
 
-        self.fn = (check.separator + 'data_leap' + check.single + '%s' + check.single + 'client%s_word%s') % \
-                  (lan_str, client_id.split(' ')[1], ii.split(' ')[1])
+        directory = (check.separator + 'data_leap' + check.single + '%s' + check.single + 'client%s' + check.single + 'group%s') % \
+                  (lan_str, client_id.split(' ')[1], group_id.split(' ')[1])
+        print directory
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        self.fn = (directory + check.single + 'client%s_word%s') % \
+                  (client_id.split(' ')[1], ii.split(' ')[1])
+
 
         # device_list = self.controller.devices
 
@@ -81,7 +88,11 @@ class ClientLeap(threading.Thread):
         self.confs = np.zeros((N, 1), np.float32)
         self.valids = np.zeros((N, 1), np.uint32)
 
-        out_of_range = 0
+        self.out_of_range = 0
+        self.different_hand = -1
+        self.hand_id = -1
+        self.hand_up = 0
+        self.hand_left = 0
 
         self.has_data = False
 
@@ -131,13 +142,29 @@ class ClientLeap(threading.Thread):
 
             # Get hands
             if not frame.hands:
-                out_of_range += 1
+                self.out_of_range += 1
                 self.valids[i] = 0
                 continue
 
             self.has_data = True
 
             hand = frame.hands[0]
+
+            if self.different_hand < 0:
+
+                self.different_hand = 0
+                self.hand_id = hand.id
+
+            else:
+
+                if self.hand_id != hand.id:
+                    self.different_hand = 1
+
+            if hand.palm_normal.y > 0:
+                self.hand_up = 1
+
+            if not hand.is_right:
+                self.hand_left = 1
 
             # Get estimation confidence
             self.confs[i] = hand.confidence
@@ -196,7 +223,7 @@ class ClientLeap(threading.Thread):
         self.l = self.l - 1
         print('capture stopped')
         print("# of frames: %d, last ts: %d, out of range: %d" % \
-              (self.l, self.tss[self.l - 1], out_of_range))
+              (self.l, self.tss[self.l - 1], self.out_of_range))
 
     def project(self):
 
@@ -241,6 +268,22 @@ class ClientLeap(threading.Thread):
 
         self.t2d = pt3d[:, 1:3]
 
+    def check_sanity(self):
+
+        if self.out_of_range > 0:
+            return False, 'Hand is out of range! Please rewrite!'
+
+        if self.different_hand > 0:
+            return False, 'Hand tracking inconsistent! Please rewrite!'
+
+        if self.hand_up > 0:
+            return False, 'Palm must face downward! Please rewrite!'
+
+        if self.hand_left > 0:
+            return False, 'Must use the right hand! Please rewrite!'
+
+        return True, ''
+
 
     def save_to_file(self, fn):
 
@@ -252,7 +295,7 @@ class ClientLeap(threading.Thread):
             confidence = self.confs[i]
             valid = self.valids[i]
             ts = self.tss[i]
-            ltss = self.ltss[i]
+            lts = self.ltss[i]
 
             # tip contains three positions and three orientations of the finger tip
             tip_str = "%8.04f, %8.04f, %8.04f, %8.04f, %8.04f, %8.04f" % tip
@@ -280,7 +323,7 @@ class ClientLeap(threading.Thread):
                     bgeo_str = "%8.04f, %8.04f" % bgeo
                     bgeo_strs.append(bgeo_str)
 
-            fd.write('%f' % ltss)
+            fd.write('%f' % lts)
             fd.write(',\t')
             fd.write('%d' % ts)
             fd.write(',\t')
@@ -326,18 +369,18 @@ class ClientLeap(threading.Thread):
 
         print('client_leap closed.')
 
-        message = self.fn + " has been saved successfully\n"
-        Text = text(self.log)
-        Text.message('filesave', message, 0, len(message), 'purple', False, False)
-
-        message = 'client_leap closed\n'
-        Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
-
-        if (self.file.exists(self.fn)):
-            self.file.delete(self.fn)
-            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
-        else:
-            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
+        # message = self.fn + " has been saved successfully\n"
+        # Text = text(self.log)
+        # Text.message('filesave', message, 0, len(message), 'purple', False, False)
+        #
+        # message = 'client_leap closed\n'
+        # Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
+        #
+        # if (self.file.exists(self.fn)):
+        #     self.file.delete(self.fn)
+        #     self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
+        # else:
+        #     self.file.insert('', 0, text=self.fn, iid=self.fn, values=("leap", str(datetime.datetime.now())[:-7]))
 
 
     def update_trajectory(self):
@@ -368,21 +411,30 @@ class ClientLeap(threading.Thread):
 
 class ClientGlove(threading.Thread):
 
-    def __init__(self, fig1, ax2, client_id, lan_str, ii, port, log, file, t4):
+    def __init__(self, fig1, ax2, client_id, lan_str, ii, port, log, file, t4, group_id):
         threading.Thread.__init__(self)
         self.log = log
+        self.group_id = group_id
         self.file = file
         self.stop_flag = False
         self.client_stop = False
         self.t4 = t4
         self.fig1 = fig1
         self.ax2 = ax2
-        self.fn = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s_word%s') % \
-                  (lan_str, client_id.split(' ')[1], ii.split(' ')[1])
+
+        directory = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s' + check.single + 'group%s') % \
+                  (lan_str, client_id.split(' ')[1], group_id.split(' ')[1])
+        print directory
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        self.fn = (directory + check.single + 'client%s_word%s') % \
+                  (client_id.split(' ')[1], ii.split(' ')[1])
+
 
         self.N = 5000
         self.ser = serial.Serial(port, 115200)
-        self.data = np.zeros((self.N, 34), np.float32)
+        self.data = np.zeros((self.N, 33), np.float32)
         self.l = 0
 
 
@@ -495,7 +547,21 @@ class ClientGlove(threading.Thread):
 
                 print("Unknown state! Program is corrupted!")
 
-        print(self.l)
+        self.data = self.data[0:self.l, :]
+
+        print('glove capture OK, %d samples are obtained.' % self.l)
+
+    def check_sanity(self):
+
+        check1 = np.mean(np.absolute(self.data[:, 2]))
+        check2 = np.mean(np.absolute(self.data[:, 2 + 16]))
+
+        print(check1, check2)
+
+        if check1 < 0.01 or check2 < 0.01:
+            return False, 'IMU error!'
+
+        return True, ''
 
     def save_to_file(self, fn):
 
@@ -544,17 +610,17 @@ class ClientGlove(threading.Thread):
         except:
             print "no serial"
 
-        message = self.fn + " has been saved successfully\n"
-        Text = text(self.log)
-        Text.message('filesave', message, 0, len(message), 'purple', False, False)
-        message = 'client_glove closed\n'
-        Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
-
-        if (self.file.exists(self.fn)):
-            self.file.delete(self.fn)
-            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
-        else:
-            self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
+        # message = self.fn + " has been saved successfully\n"
+        # Text = text(self.log)
+        # Text.message('filesave', message, 0, len(message), 'purple', False, False)
+        # message = 'client_glove closed\n'
+        # Text.message('plotcompleted', message, 0, len(message), 'red', False, True)
+        #
+        # if (self.file.exists(self.fn)):
+        #     self.file.delete(self.fn)
+        #     self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
+        # else:
+        #     self.file.insert('', 0, text=self.fn, iid=self.fn, values=("glove", str(datetime.datetime.now())[:-7]))
 
 
 
