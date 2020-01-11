@@ -3,6 +3,7 @@ import string
 from tkinter import *
 from tkinter import ttk
 import GUI_Main
+import mysql.connector
 import json
 import client_ui
 import threading
@@ -11,6 +12,13 @@ import SystemChecking
 check = SystemChecking.Application()
 src_dir, arch_dir = check.system_checking()
 check.create_file()
+
+def getopenconnection():
+    # return mysql.connector.connect(host="127.0.0.1"
+    #                                , user="root", passwd="root", database="innodb")
+    return mysql.connector.connect(host="asu.cg1bro5nacma.us-west-1.rds.amazonaws.com"
+        ,user="root", passwd="mypassword", database="inAir")
+
 class Application(object):
     def __init__(self, master=None, input=None):
         self.master = master
@@ -83,6 +91,22 @@ class Application(object):
                                              check.leap_data_path(), client_id, lan, group_id, word_id, account)
                         match = True
                         break
+        # try:
+        #     db = getopenconnection()
+        #     cursor = db.cursor()
+        #     sql = "SELECT * from account WHERE account='%s' AND password='%s'" % (account, password)
+        #     cursor.execute(sql)
+        #     results = cursor.fetchall()
+        #     if len(results) > 0:
+        #         for result in results:
+        #             self.fm.destroy()
+        #             GUI_Main.Application(self.master, "3", self.input, check.glove_data_path(),
+        #                                  check.video_data_path(),
+        #                                  check.leap_data_path(), result[5], result[3], result[4], result[6], account)
+        #             match = True
+        # except:
+        #     print "error"
+
         if match == False:
             from tkinter import messagebox
             messagebox.showerror("Error", "account and password doesn't match")

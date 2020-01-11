@@ -20,6 +20,7 @@ import Camera
 import GUI_Login
 import Glove
 import Glove_Leap
+import mysql.connector
 import json
 import serial
 
@@ -349,6 +350,18 @@ class Application(object):
                             f.truncate()
                             break
 
+            # try:
+            #     db = getopenconnection()
+            #     cursor = db.cursor()
+            #     sql = "update account set account.lan = '%s', account.group = '%s', account.word = '%s'" \
+            #           " where account.account='%s'" %\
+            #           (self.lan_v.get(),int(self.group_v.get().split(' ')[1]),
+            #            int(self.word_v.get().split(' ')[1]), self.account )
+            #     cursor.execute(sql)
+            #     db.commit()
+            #
+            # except:
+            #     print "error"
 
 
 
@@ -800,6 +813,11 @@ class Application(object):
         self.master.destroy()
         sys.exit()
 
+def getopenconnection():
+    # return mysql.connector.connect(host="127.0.0.1"
+    #                                , user="root", passwd="root", database="innodb")
+    return mysql.connector.connect(host="asu.cg1bro5nacma.us-west-1.rds.amazonaws.com"
+        ,user="root", passwd="mypassword", database="inAir")
 
 # if __name__ == '__main__':
 #     app = Application()
