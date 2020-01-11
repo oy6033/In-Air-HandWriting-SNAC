@@ -20,6 +20,7 @@ import Camera
 import GUI_Login
 import Glove
 import Glove_Leap
+import json
 import serial
 
 
@@ -28,12 +29,17 @@ import serial
 
 class Application(object):
 
-    def __init__(self, master=None, id=None, input=None, data_path=None, video_path=None, temp_path =None, client_id=None):
+    def __init__(self, master=None, id=None, input=None, data_path=None, video_path=None, temp_path =None, client_id=None,
+                 lan=None, group=None, word=None, account=None):
         self.master = master
         self.maxtimes = 5
         self.id = id
         self.master.title("In-Air Hand Writing")
         self.client_id = client_id
+        self.lan = lan
+        self.group = group
+        self.word = word
+        self.account = account
         self.createWidgets()
         self.data_path = data_path
         self.video_path = video_path
@@ -144,7 +150,7 @@ class Application(object):
             lan = tk.Frame(master=self.mianFram)
             # ttk.Button(master=lan, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.lan_v = StringVar()
-            self.lan_v.set('English')
+            self.lan_v.set(self.lan)
             self.lan_box = ttk.Combobox(master=lan, state="readonly", textvariable=self.lan_v, values=self.lan_list,
                              justify='center')
             self.lan_box.bind("<<ComboboxSelected>>", self.lan_change)
@@ -156,7 +162,7 @@ class Application(object):
             group = tk.Frame(master=self.mianFram)
             # ttk.Button(master=group, text='<-', command=self.on_prev_word, takefocus=0).pack(fill=X, side=LEFT)
             self.group_v = StringVar()
-            self.group_v.set('group 0')
+            self.group_v.set('group %d' % self.group)
             group_box = ttk.Combobox(master=group, state="readonly", textvariable=self.group_v, values=group_list,
                              justify='center')
             group_box.bind("<<ComboboxSelected>>", self.group_change)
@@ -170,7 +176,8 @@ class Application(object):
             ttk.Button(master=word, text='<-', command=lambda
                 event=None: self.on_prev_word(event), takefocus=0).pack(fill=X, side=LEFT, expand=YES)
             self.word_v = StringVar()
-            self.word_v.set('word %d' % 0)
+            self.word_v.set('word %d' % self.word)
+            print self.word
             self.word_box = ttk.Combobox(master=word, state="readonly", textvariable=self.word_v, values=self.word_label,
                              justify='center',width=70)
             self.word_box.bind("<<ComboboxSelected>>", self.update_text)
@@ -230,6 +237,9 @@ class Application(object):
             self.notebook.add(self.file, text="File")
             self.notebook.pack(fill='both', expand=YES)
             noteBookFrame.pack(fill='both', expand=YES)
+
+            self.update_all()
+
 
 
 
@@ -321,8 +331,23 @@ class Application(object):
                 print self.warning_str
             if good1 and good2:
                 self.on_next_word(event=None)
+
             self.label_v.set("Stopped")
             self.s.configure('TLabel', foreground='red')
+
+            with open('../meta/account.json',"r+") as f:
+                data = json.load(f)
+                for p in data:
+                    for i in p['user']:
+                        if (self.account == i['account']):
+                            i['lan'] = self.lan_v.get()
+                            i['group'] = int(self.group_v.get().split(' ')[1])
+                            i['word'] = int(self.word_v.get().split(' ')[1])
+                            print i['word']
+                            f.seek(0)  # rewind
+                            json.dump(data, f)
+                            f.truncate()
+                            break
 
 
 
@@ -362,6 +387,15 @@ class Application(object):
         print self.word_index
         self.v.set(self.word_list[self.word_index ])
 
+    def update_all(self):
+        index = self.lan_v.get()
+        self.word_list = self.lan_dict[index]
+        index = int(self.group_v.get().split(' ')[1])
+        self.word_v.set('word %d' % (self.word))
+        self.word_box.config(values=['word %d' % x for x in range(index * 100, (index + 1) * 100)])
+        self.word_index = int(self.word_v.get().split(' ')[1])
+        print self.word_index
+        self.v.set(self.word_list[self.word_index ])
 
     def load_meta_files(self):
         words_eng = []

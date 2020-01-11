@@ -74,10 +74,13 @@ class Application(object):
                 for i in p['user']:
                     if(account == i['account'] and password == i['password']):
                         client_id = i['id']
+                        lan = i['lan']
+                        group_id = i['group']
+                        word_id = i['word']
                         self.fm.destroy()
                         GUI_Main.Application(self.master, "3", self.input, check.glove_data_path(),
                                              check.video_data_path(),
-                                             check.leap_data_path(), client_id)
+                                             check.leap_data_path(), client_id, lan, group_id, word_id, account)
                         match = True
                         break
         if match == False:
