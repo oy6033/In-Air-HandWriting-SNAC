@@ -700,6 +700,7 @@ class Application(object):
     def back_menu(self):
         if self.id == '3':
             plt.close()
+        self.mianFram.unbind_all('<space>')
         self.mianFram.destroy()
         GUI_Login.Application(self.master, self.input)
 
