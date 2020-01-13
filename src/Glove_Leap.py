@@ -566,7 +566,6 @@ class ClientGlove(threading.Thread):
     def save_to_file(self, fn):
 
         np.savetxt(fn, self.data, fmt='%.8f', delimiter=', ')
-        self.data = np.zeros((self.N, 34), np.float64)
 
     def update_trajectory(self):
         print('update signal plot')
