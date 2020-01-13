@@ -1,2 +1,2 @@
-port:COM3
+port:/dev/cu.usbmodem14101
 path:txt

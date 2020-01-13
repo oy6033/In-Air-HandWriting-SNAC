@@ -246,6 +246,21 @@ class Application(object):
 
     def setup_ui(self):
 
+        # self.fig = plt.figure(figsize=(5, 6))
+        # self.ax1 = self.fig.add_subplot(2, 1, 1, projection='3d')
+        #
+        # self.ax2 = self.fig.add_subplot(2, 1, 2, projection='3d')
+
+        # self.canvas = FigureCanvasTkAgg(self.fig, master=self.mianFram)
+        # toolbarFrame = tk.Frame(master=self.mianFram)
+        # toolbarFrame.pack(fill='both', side=BOTTOM)
+        # self.canvas._tkcanvas.pack(fill='both', side=LEFT)
+        # self.ax1.mouse_init()
+        # self.ax2.mouse_init()
+        # toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
+        # toolbar.update()
+
+
 
         fig1 = plt.figure()
 
@@ -266,7 +281,13 @@ class Application(object):
 
         self.fig1 = fig1
 
-        fig1.show()
+        self.canvas = FigureCanvasTkAgg(self.fig1, master=self.mianFram)
+        toolbarFrame = tk.Frame(master=self.mianFram)
+        toolbarFrame.pack(fill='both', side=BOTTOM)
+        self.canvas._tkcanvas.pack(fill='both', side=LEFT)
+        self.ax_trajectory_3d .mouse_init()
+        toolbar = NavigationToolbar2Tk(self.canvas, toolbarFrame)
+        toolbar.update()
 
 
 
