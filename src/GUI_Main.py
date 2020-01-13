@@ -416,7 +416,7 @@ class Application(object):
         words_eng = []
         words_chs = []
 
-        with open('..\\meta\\en_10k_random.txt', 'r') as fp_eng:
+        with open('../meta/en_10k_random.txt', 'r') as fp_eng:
 
             word = fp_eng.readline().strip()
             words_eng.append(word)
@@ -424,7 +424,7 @@ class Application(object):
                 word = fp_eng.readline().strip()
                 words_eng.append(word)
 
-        with codecs.open('..\\meta\\cn_10k_random.txt', encoding='utf-8') as fp_chs:
+        with codecs.open('../meta/cn_10k_random.txt', encoding='utf-8') as fp_chs:
 
             word = fp_chs.readline().strip()
             words_chs.append(word)
