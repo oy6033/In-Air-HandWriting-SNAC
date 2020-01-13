@@ -58,7 +58,7 @@ class ClientLeap(threading.Thread):
         self.ax_trajectory_2d = ax_trajectory_2d
         self.ax_trajectory_3d = ax_trajectory_3d
 
-        directory = (check.separator + 'data_leap' + check.single + '%s' + check.single + 'client%s' + check.single + 'group%s') % \
+        directory = (check.separator + 'data_leap' + check.single + '%s' + check.single + 'client%s' + check.single + '%s') % \
                   (lan_str, client_id.split(' ')[1], group_id.split(' ')[1])
         print directory
         if not os.path.exists(directory):
@@ -436,7 +436,7 @@ class ClientGlove(threading.Thread):
         self.fig1 = fig1
         self.ax2 = ax2
 
-        directory = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s' + check.single + 'group%s') % \
+        directory = (check.separator + 'data_glove' + check.single + '%s' + check.single + 'client%s' + check.single + '%s') % \
                   (lan_str, client_id.split(' ')[1], group_id.split(' ')[1])
         print directory
         if not os.path.exists(directory):
