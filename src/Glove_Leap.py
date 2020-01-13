@@ -93,6 +93,8 @@ class ClientLeap(threading.Thread):
         self.hand_id = -1
         self.hand_up = 0
         self.hand_left = 0
+        self.max_z = 0
+        self.min_z = 1000
 
         self.has_data = False
 
@@ -190,8 +192,17 @@ class ClientLeap(threading.Thread):
             tip_pos = (tip_end.x, tip_end.y, tip_end.z,
                        tip_end.x - tip_start.x, tip_end.y - tip_start.y, tip_end.z - tip_start.z)
 
+
+
             for j in range(6):
                 self.tip_co[i, j] = tip_pos[j]
+
+            if tip_pos[1] > self.max_z:
+                self.max_z = tip_pos[1]
+
+            if tip_pos[1] < self.min_z:
+                self.min_z = tip_pos[1]
+
 
             # Get fingers
             for j in range(5):
@@ -281,6 +292,9 @@ class ClientLeap(threading.Thread):
 
         if self.hand_left > 0:
             return False, 'Must use the right hand! Please rewrite!'
+
+        if self.max_z - self.min_z < 100:
+            return False, 'Too small! Please rewrite!'
 
         return True, ''
 
