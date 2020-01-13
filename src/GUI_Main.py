@@ -334,13 +334,15 @@ class Application(object):
             # self.label_v.set("Stopping")
             # self.s.configure('TLabel', foreground='orange')
 
-            while (1):
-                if self.t5.isAlive() == True or self.t4.isAlive() == True:
-                    pass
-                else:
-                    self.warning_str = "leap and glove are closed\n"
-                    self.message('error', self.warning_str, 0, len(self.warning_str), 'red', False, True)
-                    break
+            # while (1):
+            #     if self.t5.isAlive() == True or self.t4.isAlive() == True:
+            #         pass
+            #     else:
+            #         self.warning_str = "leap and glove are closed\n"
+            #         self.message('error', self.warning_str, 0, len(self.warning_str), 'red', False, True)
+            #         break
+            self.warning_str = "leap and glove are closed\n"
+            self.message('error', self.warning_str, 0, len(self.warning_str), 'red', False, True)
 
             good1, error_str = self.t4.check_sanity()
             if not good1:
