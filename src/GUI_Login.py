@@ -16,8 +16,8 @@ check.create_file()
 def getopenconnection():
     # return mysql.connector.connect(host="127.0.0.1"
     #                                , user="root", passwd="root", database="innodb")
-    return mysql.connector.connect(host="asu.cg1bro5nacma.us-west-1.rds.amazonaws.com"
-        ,user="root", passwd="mypassword", database="inAir")
+    return mysql.connector.connect(host="cdb-1iymjh2k.cd.tencentcdb.com", port = 10066
+        ,user="root", passwd="Ou67518326!", database="inAir")
 
 class Application(object):
     def __init__(self, master=None, input=None):
