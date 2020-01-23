@@ -128,10 +128,10 @@ if __name__ == '__main__':
     input = None
     try:
 
-        # import serial.tools.list_ports
-        # port_list = list(serial.tools.list_ports.comports())
-        # for port in port_list:
-        #     print port
+        import serial.tools.list_ports
+        port_list = list(serial.tools.list_ports.comports())
+        for port in port_list:
+            print port
         filepath = "../meta/config.txt"
         map = {}
         with open(filepath) as fp:
