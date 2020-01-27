@@ -3,7 +3,7 @@ import string
 from tkinter import *
 from tkinter import ttk
 import GUI_Main
-import mysql.connector
+# import mysql.connector
 import json
 import client_ui
 import threading
@@ -131,7 +131,7 @@ if __name__ == '__main__':
         # import serial.tools.list_ports
         # port_list = list(serial.tools.list_ports.comports())
         # for port in port_list:
-        #     print port
+        #     print str(port)
         filepath = "../meta/config.txt"
         map = {}
         with open(filepath) as fp:

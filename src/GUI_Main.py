@@ -20,7 +20,7 @@ import Camera
 import GUI_Login
 import Glove
 import Glove_Leap
-import mysql.connector
+# import mysql.connector
 import json
 import serial
 
@@ -461,11 +461,11 @@ class Application(object):
         self.warning_str = ''
 
         if self.word_index % 100 < self.group_size-1:
-
             self.word_index = self.word_index + 1
 
         else:
-            self.warning_str = 'This is the last word.\n'
+            self.on_next_group(event=None)
+            self.warning_str = 'Change to next group %d\n' % (self.group+1)
             self.message('lastWord', self.warning_str, 0, len(self.warning_str), 'red', False, True)
             print (self.warning_str)
 
@@ -474,6 +474,17 @@ class Application(object):
 
         print(self.word_index)
         # self.update_text()
+
+    def on_next_group(self, event):
+        self.group_index = self.group_index + 1
+        print self.group_index
+        index = int(self.group_v.get().split(' ')[1]) + 1
+        print index
+        self.group_v.set('group %d' % index)
+        self.word_v.set('word %d' % (index*100))
+        self.word_box.config(values=['word %d' % x for x in range(index*100, (index+1)*100)])
+        self.update_text(event=None)
+
 
 
 
