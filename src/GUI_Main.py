@@ -465,7 +465,7 @@ class Application(object):
 
         else:
             self.on_next_group(event=None)
-            self.warning_str = 'Change to next group %d\n' % (self.group+1)
+            self.warning_str = 'Change to next group\n'
             self.message('lastWord', self.warning_str, 0, len(self.warning_str), 'red', False, True)
             print (self.warning_str)
 
