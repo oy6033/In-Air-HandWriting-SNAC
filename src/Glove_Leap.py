@@ -586,17 +586,26 @@ class ClientGlove(threading.Thread):
         data = self.data
         l = self.l
 
-        for j in range(3):
+
+        cols = [2, 5, 14, 18, 21, 30]
+
+        for j in range(6):
             ax = self.ax2[j]
             ax.clear()
-            # ax.plot(data[:l, 0], data[:l, j + 1])
-            ax.plot(data[:l, j + 2])
+            col = cols[j]
+            ax.plot(data[:l,col])
 
-        for j in range(3):
-            ax = self.ax2[j + 3]
-            ax.clear()
-            # ax.plot(data[:l, 0], data[:l, j + 1])
-            ax.plot(data[:l, j + 2 + 16])
+        # for j in range(3):
+        #     ax = self.ax2[j]
+        #     ax.clear()
+        #     # ax.plot(data[:l, 0], data[:l, j + 1])
+        #     ax.plot(data[:l, j + 2])
+        #
+        # for j in range(3):
+        #     ax = self.ax2[j + 3]
+        #     ax.clear()
+        #     # ax.plot(data[:l, 0], data[:l, j + 1])
+        #     ax.plot(data[:l, j + 2 + 16])
 
         self.fig1.canvas.draw_idle()
 

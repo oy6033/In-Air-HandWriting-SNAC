@@ -218,8 +218,8 @@ class Application(object):
 
             noteBookFrame = tk.Frame(master=self.mianFram)
             self.notebook = ttk.Notebook(master=noteBookFrame)
-            self.log = tk.Text(master=self.notebook,height=5)
-            # TreeView
+            self.log = tk.Text(master=self.notebook, takefocus=0, height=5, state='disable')
+            # TreeViewin
             self.file = ttk.Treeview(master=self.notebook, columns=("A", "B"), height=5)
             self.file.heading("#0", text='Item')
             self.file.heading("#1", text='Floder')
@@ -245,7 +245,6 @@ class Application(object):
 
 
     def setup_ui(self):
-
 
         fig1 = plt.figure()
 
@@ -625,12 +624,14 @@ class Application(object):
         event.widget.icursor('end')
 
     def message(self, message_name, message, start, end, color, underline, is_open):
+        self.log.config(state='normal')
         if is_open == False:
             self.log.insert('1.0', message)
         else:
             self.log.insert('1.0', message)
             self.log.tag_add(message_name, '1.' + str(start), '1.' + str(end))
             self.log.tag_config(message_name, foreground=color, underline=underline)
+        self.log.config(state='disabled')
 
     def next_image(self):
         if self.images_index < 123:
